@@ -2,17 +2,17 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![No Color](https://img.shields.io/badge/no--color.org-compliant-blue)](https://no-color.org)
 
-# klique
+# Klique
 
 A Kotlin DSL wrapper for [Clique](https://github.com/kusoroadeolu/Clique) — the dependency-free Java library for beautifying terminal output.
 
-klique adds idiomatic Kotlin ergonomics on top of Clique: trailing-lambda builders, extension functions on `String`, operator overloads, and `Collection` extensions — so you spend less time wiring up Java builders and more time building great CLIs.
+Klique adds idiomatic Kotlin ergonomics on top of Clique: trailing-lambda builders, extension functions on `String`, operator overloads, and `Collection` extensions — so you spend less time wiring up Java builders and more time building great CLIs.
 
 ---
 
 ## Credits
 
-klique is built on top of **[Clique](https://github.com/kusoroadeolu/Clique)** by [kusoroadeolu](https://github.com/kusoroadeolu). All terminal rendering, color support, and component logic is provided by Clique. klique only provides the Kotlin API layer.
+Klique is built on top of **[Clique](https://github.com/kusoroadeolu/Clique)** by [kusoroadeolu](https://github.com/kusoroadeolu). All terminal rendering, color support, and component logic is provided by Clique. Klique only provides the Kotlin API layer.
 
 ---
 
@@ -37,7 +37,7 @@ dependencies {
 }
 ```
 
-klique re-exports Clique as an `api` dependency, so you get full access to all Clique types without a separate dependency declaration.
+Klique re-exports Clique as an `api` dependency, so you get full access to all Clique types without a separate dependency declaration.
 
 ---
 

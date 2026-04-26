@@ -31,7 +31,7 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
             pom {
-                name.set("klique")
+                name.set("Klique")
                 description.set("A Kotlin DSL wrapper for Clique")
                 url.set("https://github.com/BryanSant/klique")
                 licenses {

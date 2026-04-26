@@ -81,9 +81,9 @@ class KliqueTest {
     fun `box DSL renders content`() {
         val output = box {
             dimensions(40, 5)
-            content("Hello from klique!")
+            content("Hello from Klique!")
         }
-        assertTrue("Hello from klique!" in output)
+        assertTrue("Hello from Klique!" in output)
     }
 
     // ── Tree ──────────────────────────────────────────────────────────────────
