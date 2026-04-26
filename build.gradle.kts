@@ -12,7 +12,7 @@ kotlin {
 }
 
 dependencies {
-    api(libs.clique-core)
+    api(libs.clique.core)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotlin.test.junit5)
 }
