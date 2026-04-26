@@ -1,0 +1,12 @@
+[versions]
+kotlin = "2.3.21"
+clique = "4.0.1"
+junit = "5.12.2"
+
+[libraries]
+clique-core = { group = "io.github.kusoroadeolu", name = "clique-core", version.ref = "clique" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit" }
+kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
