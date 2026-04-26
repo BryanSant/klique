@@ -5,7 +5,11 @@ plugins {
 }
 
 group = "io.github.bryansant"
-version = System.getenv("GITHUB_REF_NAME")?.removePrefix("v")?.takeIf { it != "main" } ?: "1.0.0"
+version = System.getenv("GITHUB_REF_NAME")?.let { ref ->
+    if (ref.startsWith("v")) ref.removePrefix("v")
+    else if (ref == "main") "1.0.1-SNAPSHOT"
+    else ref
+} ?: "1.0.1-SNAPSHOT"
 
 kotlin {
     jvmToolchain(25)
