@@ -4,8 +4,8 @@ plugins {
     signing
 }
 
-group = "io.github.klique"
-version = System.getenv("GITHUB_REF_NAME")?.removePrefix("v") ?: "1.0.0"
+group = "io.github.bryansant"
+version = System.getenv("GITHUB_REF_NAME")?.removePrefix("v")?.takeIf { it != "main" } ?: "1.0.0"
 
 kotlin {
     jvmToolchain(25)
@@ -33,7 +33,7 @@ publishing {
             pom {
                 name.set("klique")
                 description.set("A Kotlin DSL wrapper for Clique")
-                url.set("https://github.com/klique/klique")
+                url.set("https://github.com/BryanSant/klique")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
@@ -47,9 +47,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/klique/klique.git")
-                    developerConnection.set("scm:git:ssh://github.com/klique/klique.git")
-                    url.set("https://github.com/klique/klique")
+                    connection.set("scm:git:git://github.com/BryanSant/klique.git")
+                    developerConnection.set("scm:git:ssh://github.com/BryanSant/klique.git")
+                    url.set("https://github.com/BryanSant/klique")
                 }
             }
         }

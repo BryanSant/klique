@@ -33,7 +33,7 @@ klique is built on top of **[Clique](https://github.com/kusoroadeolu/Clique)** b
 
 ```kotlin
 dependencies {
-    implementation("io.github.klique:klique:1.0.0")
+    implementation("io.github.bryansant:klique:1.0.0")
 }
 ```
 
