@@ -7,9 +7,9 @@ plugins {
 group = "io.github.bryansant"
 version = System.getenv("GITHUB_REF_NAME")?.let { ref ->
     if (ref.startsWith("v")) ref.removePrefix("v")
-    else if (ref == "main") "1.0.1-SNAPSHOT"
+    else if (ref == "main") "1.0.2-SNAPSHOT"
     else ref
-} ?: "1.0.1-SNAPSHOT"
+} ?: "1.0.2-SNAPSHOT"
 
 kotlin {
     jvmToolchain(25)
@@ -35,7 +35,7 @@ publishing {
         create<MavenPublication>("maven") {
             from(components["java"])
             pom {
-                name.set("Klique")
+                name.set("klique")
                 description.set("A Kotlin DSL wrapper for Clique")
                 url.set("https://github.com/BryanSant/klique")
                 licenses {
@@ -60,11 +60,11 @@ publishing {
     }
     repositories {
         maven {
-            name = "OSSRH"
-            url = uri("https://central.sonatype.com/api/v1/publisher/deployments/maven2")
+            name = "SonatypeCentral"
+            url = uri("https://sonatype.com")
             credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
+                username = System.getenv("CENTRAL_PORTAL_USERNAME")
+                password = System.getenv("CENTRAL_PORTAL_PASSWORD")
             }
         }
         maven {
