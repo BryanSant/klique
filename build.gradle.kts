@@ -8,9 +8,9 @@ plugins {
 group = "io.github.bryansant"
 version = System.getenv("GITHUB_REF_NAME")?.let { ref ->
     if (ref.startsWith("v")) ref.removePrefix("v")
-    else if (ref == "main") "1.0.3-SNAPSHOT"
+    else if (ref == "main") "1.0.4-SNAPSHOT"
     else ref
-} ?: "1.0.3-SNAPSHOT"
+} ?: "1.0.4-SNAPSHOT"
 
 kotlin {
     jvmToolchain(25)
@@ -75,7 +75,8 @@ nmcp {
     publishAllPublicationsToCentralPortal {
         username = System.getenv("CENTRAL_PORTAL_USERNAME") ?: ""
         password = System.getenv("CENTRAL_PORTAL_PASSWORD") ?: ""
-        publishingType = "AUTOMATIC"
+        //publishingType = "AUTOMATIC"
+        publishingType = "USER_MANAGED"
     }
 }
 
