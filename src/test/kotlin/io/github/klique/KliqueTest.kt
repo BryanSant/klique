@@ -162,6 +162,76 @@ class KliqueTest {
         assertTrue("World" in result)
     }
 
+    // ── Spinner ───────────────────────────────────────────────────────────────
+
+    @Test
+    fun `withSpinner returns block result`() {
+        val result = withSpinner("Testing") { 42 }
+        assertTrue(result == 42)
+    }
+
+    @Test
+    fun `withSpinner label can be mutated mid-block`() {
+        val result = withSpinner("Phase 1") {
+            label = "Phase 2"
+            label
+        }
+        assertTrue(result == "Phase 2")
+    }
+
+    @Test
+    fun `Spinner start and stop lifecycle`() {
+        val spinner = Spinner("Working")
+        spinner.start()
+        spinner.stop()
+    }
+
+    @Test
+    fun `Spinner use block stops on exit`() {
+        Spinner("Closing").use { it.start() }
+    }
+
+    // ── OSC window title ──────────────────────────────────────────────────────
+
+    @Test
+    fun `setWindowTitle does not throw`() {
+        setWindowTitle("Klique Test")
+    }
+
+    // ── SmoothProgressBar ─────────────────────────────────────────────────────
+
+    @Test
+    fun `smoothProgressBar completes after all ticks`() {
+        val bar = smoothProgressBar(5)
+        repeat(5) { bar.tick() }
+        assertTrue(bar.done)
+    }
+
+    @Test
+    fun `smoothProgressBar plus operator advances`() {
+        val bar = smoothProgressBar(10)
+        bar + 5
+        assertTrue(!bar.done)
+        bar + 5
+        assertTrue(bar.done)
+    }
+
+    @Test
+    fun `withSmoothProgress iterates all items`() {
+        val items = listOf("a", "b", "c")
+        val seen = mutableListOf<String>()
+        items.withSmoothProgress { seen += it }
+        assertTrue(seen.containsAll(items))
+    }
+
+    @Test
+    fun `withSmoothProgress custom width iterates all items`() {
+        val items = listOf(1, 2, 3)
+        val seen = mutableListOf<Int>()
+        items.withSmoothProgress(20) { seen += it }
+        assertTrue(seen.containsAll(items))
+    }
+
     // ── ProgressBar ───────────────────────────────────────────────────────────
 
     @Test
