@@ -2,14 +2,15 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     `maven-publish`
     signing
+    id("com.gradleup.nmcp") version "1.4.4"
 }
 
 group = "io.github.bryansant"
 version = System.getenv("GITHUB_REF_NAME")?.let { ref ->
     if (ref.startsWith("v")) ref.removePrefix("v")
-    else if (ref == "main") "1.0.2-SNAPSHOT"
+    else if (ref == "main") "1.0.3-SNAPSHOT"
     else ref
-} ?: "1.0.2-SNAPSHOT"
+} ?: "1.0.3-SNAPSHOT"
 
 kotlin {
     jvmToolchain(25)
@@ -60,14 +61,6 @@ publishing {
     }
     repositories {
         maven {
-            name = "SonatypeCentral"
-            url = uri("https://sonatype.com")
-            credentials {
-                username = System.getenv("CENTRAL_PORTAL_USERNAME")
-                password = System.getenv("CENTRAL_PORTAL_PASSWORD")
-            }
-        }
-        maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/${System.getenv("GITHUB_REPOSITORY")}")
             credentials {
@@ -75,6 +68,14 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
+    }
+}
+
+nmcp {
+    publishAllPublicationsToCentralPortal {
+        username = System.getenv("CENTRAL_PORTAL_USERNAME") ?: ""
+        password = System.getenv("CENTRAL_PORTAL_PASSWORD") ?: ""
+        publishingType = "AUTOMATIC"
     }
 }
 
