@@ -8,16 +8,14 @@ plugins {
 group = "io.github.bryansant"
 version = System.getenv("GITHUB_REF_NAME")?.let { ref ->
     if (ref.startsWith("v")) ref.removePrefix("v")
-    else if (ref == "main") "1.0.4-SNAPSHOT"
     else ref
-} ?: "1.0.4-SNAPSHOT"
+} ?: "1.0.5-SNAPSHOT"
 
 kotlin {
     jvmToolchain(25)
 }
 
 dependencies {
-    api(libs.clique.core)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotlin.test.junit5)
 }
@@ -37,7 +35,7 @@ publishing {
             from(components["java"])
             pom {
                 name.set("klique")
-                description.set("A Kotlin DSL wrapper for Clique")
+                description.set("A pure-Kotlin terminal UI library with idiomatic DSL components")
                 url.set("https://github.com/BryanSant/klique")
                 licenses {
                     license {

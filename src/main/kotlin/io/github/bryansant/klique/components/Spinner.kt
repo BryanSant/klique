@@ -1,0 +1,171 @@
+package io.github.bryansant.klique.components
+
+import io.github.bryansant.klique.config.SpinnerConfig
+import io.github.bryansant.klique.internal.utils.AnsiDetector
+import io.github.bryansant.klique.internal.utils.StringUtils
+import io.github.bryansant.klique.style.StyleBuilder
+import java.io.PrintStream
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+
+// Cursor sequences using numeric codes to avoid literal ESC bytes in source
+private val ESC = 27.toChar()
+private const val HIDE_CURSOR_SUFFIX = "[?25l"
+private const val SHOW_CURSOR_SUFFIX = "[?25h"
+
+private fun hideCursorSeq() = "$ESC$HIDE_CURSOR_SUFFIX"
+private fun showCursorSeq() = "$ESC$SHOW_CURSOR_SUFFIX"
+
+class Spinner(
+    var label: String = "",
+    val config: SpinnerConfig = SpinnerConfig.DEFAULT,
+) : Component, AutoCloseable {
+
+    private var currentFrame: Int = 0
+    private var started: Boolean = false
+    private var stopped: Boolean = false
+
+    // Daemon thread for background spinning (Klique-style)
+    @Volatile private var running: Boolean = false
+    private var thread: Thread? = null
+
+    companion object {
+        private val shutdownHookRegistered = AtomicBoolean(false)
+
+        fun ensureShutdownHook() {
+            if (shutdownHookRegistered.compareAndSet(false, true)) {
+                Runtime.getRuntime().addShutdownHook(Thread {
+                    if (AnsiDetector.ansiEnabled()) {
+                        System.out.print(showCursorSeq())
+                        System.out.flush()
+                    }
+                })
+            }
+        }
+    }
+
+    // ── Background-thread mode (for withSpinner { }) ──
+
+    fun start(): Spinner {
+        if (running) return this
+        running = true
+        ensureShutdownHook()
+        hideCursor(System.out)
+        thread = Thread {
+            var idx = 0
+            while (running) {
+                val frame = config.frames[idx % config.frames.size]
+                System.out.print("\r$frame ${this.label}")
+                System.out.flush()
+                idx++
+                try {
+                    Thread.sleep(config.frameDelayMs)
+                } catch (e: InterruptedException) {
+                    break
+                }
+            }
+            System.out.print("\r[K")
+            System.out.flush()
+            showCursor(System.out)
+        }.also {
+            it.isDaemon = true
+            it.start()
+        }
+        return this
+    }
+
+    fun stop() {
+        if (!running) return
+        running = false
+        thread?.join(500)
+        thread = null
+    }
+
+    override fun close() = stop()
+
+    // ── Manual-tick mode (Clique-style) ──
+
+    fun tick(): Spinner {
+        if (!started) {
+            started = true
+            hideCursor(System.out)
+        }
+        currentFrame = (currentFrame + 1) % config.frames.size
+        this.render()
+        return this
+    }
+
+    fun stop(stream: PrintStream): Spinner {
+        if (stopped) return this
+        stopped = true
+        showCursor(stream)
+        stream.println()
+        stream.flush()
+        return this
+    }
+
+    fun isStopped(): Boolean = stopped
+
+    // ── Blocking timed spin ──
+
+    fun spin(durationMs: Long): Spinner {
+        require(durationMs >= 0) { "Duration cannot be negative" }
+        val hook = Thread { showCursor(System.out) }
+        Runtime.getRuntime().addShutdownHook(hook)
+        hideCursor(System.out)
+        try {
+            val end = System.currentTimeMillis() + durationMs
+            this.render()
+            while (System.currentTimeMillis() < end) {
+                currentFrame = (currentFrame + 1) % config.frames.size
+                this.render()
+                try {
+                    TimeUnit.MILLISECONDS.sleep(config.frameDelayMs)
+                } catch (e: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    break
+                }
+            }
+        } finally {
+            try { Runtime.getRuntime().removeShutdownHook(hook) } catch (_: IllegalStateException) {}
+            stop(System.out)
+        }
+        return this
+    }
+
+    override fun get(): String {
+        val frame = config.frames[currentFrame]
+        val builder = StyleBuilder().appendAndReset(frame, *config.color)
+        if (label.isNotEmpty()) {
+            builder.appendAndReset(" " + StringUtils.parse(label, config.parser))
+        }
+        return builder.toString()
+    }
+
+    override fun render(stream: PrintStream) {
+        stream.print("\r${get()}")
+        stream.flush()
+    }
+
+    private fun hideCursor(stream: PrintStream) {
+        if (AnsiDetector.ansiEnabled()) { stream.print(hideCursorSeq()); stream.flush() }
+    }
+
+    private fun showCursor(stream: PrintStream) {
+        if (AnsiDetector.ansiEnabled()) { stream.print(showCursorSeq()); stream.flush() }
+    }
+}
+
+fun <T> withSpinner(
+    label: String = "",
+    config: SpinnerConfig = SpinnerConfig.DEFAULT,
+    block: Spinner.() -> T,
+): T {
+    Spinner.ensureShutdownHook()
+    val spinner = Spinner(label, config).start()
+    return try {
+        spinner.block()
+    } finally {
+        spinner.stop()
+    }
+}

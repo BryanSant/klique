@@ -1,18 +1,12 @@
-![Supported JVM Versions](https://img.shields.io/badge/JVM-21+-brightgreen.svg?&logo=openjdk)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+![Supported JVM Versions](https://img.shields.io/badge/JVM-25+-brightgreen.svg?&logo=openjdk)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![No Color](https://img.shields.io/badge/no--color.org-compliant-blue)](https://no-color.org)
 
 # Klique
 
-A Kotlin DSL wrapper for [Clique](https://github.com/kusoroadeolu/Clique) — the dependency-free Java library for beautifying terminal output.
+A pure Kotlin terminal UI library inspired by [Clique](https://github.com/kusoroadeolu/Clique).
 
-Klique adds idiomatic Kotlin ergonomics on top of Clique: trailing-lambda builders, extension functions on `String`, operator overloads, and `Collection` extensions — so you spend less time wiring up Java builders and more time building great CLIs.
-
----
-
-## Credits
-
-Klique is built on top of **[Clique](https://github.com/kusoroadeolu/Clique)** by [kusoroadeolu](https://github.com/kusoroadeolu). All terminal rendering, color support, and component logic is provided by Clique. Klique only provides the Kotlin API layer.
+Klique provides idiomatic Kotlin ergonomics for building beautiful CLIs: trailing-lambda builders, extension functions on `String`, operator overloads, and `Collection` extensions.
 
 ---
 
@@ -33,11 +27,9 @@ Klique is built on top of **[Clique](https://github.com/kusoroadeolu/Clique)** b
 
 ```kotlin
 dependencies {
-    implementation("io.github.bryansant:klique:1.0.4")
+    implementation("io.github.bryansant:klique:1.0.5")
 }
 ```
-
-Klique re-exports Clique as an `api` dependency, so you get full access to all Clique types without a separate dependency declaration.
 
 ---
 
@@ -113,8 +105,7 @@ registerAvailableThemes()               // register all built-in themes
 val themes = findAvailableThemes()      // list them
 ```
 
-**Built-in themes:** Catppuccin, Dracula, Gruvbox, Nord, Tokyo Night.  
-See the [Clique Themes Repository](https://github.com/kusoroadeolu/clique-themes) for details.
+**Built-in themes:** Catppuccin, Dracula, Gruvbox, Nord, Tokyo Night.
 
 ### Tables
 
@@ -232,6 +223,53 @@ progressBar(files).forEach { file ->
 }
 ```
 
+### Smooth Progress Bars
+
+A smoother alternative to the standard progress bar, rendering fractional blocks for higher-fidelity progress tracking:
+
+```kotlin
+files.withSmoothProgress { file ->
+    process(file)
+}
+```
+
+Manual tick control:
+
+```kotlin
+val bar = smoothProgressBar(100)
+bar + 10
+if (bar.done) println("Complete!")
+```
+
+### Spinners
+
+Show indeterminate progress with a terminal spinner. The spinner runs automatically on a background thread while your block executes:
+
+```kotlin
+withSpinner("Building project...") {
+    // You can update the label dynamically
+    label = "Resolving dependencies..."
+    performTask()
+}
+```
+
+Manual lifecycle control:
+
+```kotlin
+val spinner = Spinner("Working")
+spinner.start()
+// do work...
+spinner.stop()
+```
+
+### Window Title
+
+Set the terminal window or tab title via OSC 2. Supported by most modern terminal emulators.
+
+```kotlin
+setWindowTitle("Build — my-project")
+```
+
 ---
 
 > **Thread safety:** Style registration/lookup and config objects (once built) are thread-safe. All other components are not — avoid sharing instances across threads.
@@ -240,4 +278,4 @@ progressBar(files).forEach { file ->
 
 ## License
 
-Apache 2.0
+MIT License
