@@ -1,8 +1,11 @@
 package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.ProgressBarConfig
+import io.github.bryansant.klique.emitOsc94
 import io.github.bryansant.klique.internal.Constants
+import io.github.bryansant.klique.internal.Gradient
 import io.github.bryansant.klique.internal.utils.StringUtils
+import io.github.bryansant.klique.style.StyleBuilder
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
 
@@ -68,7 +71,7 @@ class ProgressBar(
     fun isDone(): Boolean = isDone
 
     override fun get(): String {
-        val percent = if (total > 0) (currentTick.toDouble() / total * 100).toInt() else 0
+        val percent = computePercent()
         val format = config.getFormatForPercent(percent)
         val glyphs = config.glyphs
         val n = glyphs.length
@@ -93,9 +96,16 @@ class ProgressBar(
         val elapsed = formatInterval(System.currentTimeMillis() - creationTime)
         val remaining = formatInterval(remainingMs())
 
+        val from = config.barGradientFrom
+        val to = config.barGradientTo
+        val styledBar = when {
+            from != null && to != null -> Gradient(from, to).apply(bar)
+            config.barColor.isNotEmpty() -> StyleBuilder().appendAndReset(bar, *config.barColor).toString()
+            else -> bar
+        }
         return StringUtils.parse(
             format
-                .replace(":bar", bar)
+                .replace(":bar", styledBar)
                 .replace(":progress", progress)
                 .replace(":total", total.toString())
                 .replace(":percent", percentStr)
@@ -106,10 +116,15 @@ class ProgressBar(
     }
 
     override fun render(stream: PrintStream) {
+        val percent = computePercent()
+        emitOsc94(stream, if (isDone) 0 else 1, percent)
         stream.print("\r${get()}")
         if (isDone) stream.println()
         stream.flush()
     }
+
+    private fun computePercent(): Int =
+        if (total > 0) (currentTick.toDouble() / total * 100).toInt() else 0
 
     private fun formatInterval(ms: Long?): String {
         if (ms == null) return "--:--"

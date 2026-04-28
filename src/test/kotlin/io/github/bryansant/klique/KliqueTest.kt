@@ -1,11 +1,15 @@
 package io.github.bryansant.klique
 
+import io.github.bryansant.klique.components.ProgressBar
 import io.github.bryansant.klique.components.Spinner
 import io.github.bryansant.klique.components.withSpinner
+import io.github.bryansant.klique.config.progressBarConfig
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 
 class KliqueTest {
 
@@ -207,6 +211,23 @@ class KliqueTest {
         Spinner("Closing").use { it.start() }
     }
 
+    @Test
+    fun `Spinner emits OSC 9 semicolon 4 state 0 on manual stop`() {
+        enableColors()
+        try {
+            val buf = ByteArrayOutputStream()
+            val stream = PrintStream(buf)
+            val spinner = Spinner("Working")
+            spinner.stop(stream)
+            val output = buf.toString()
+            val esc = 27.toChar()
+            val bel = 7.toChar()
+            assertTrue("${esc}]9;4;0;0${bel}" in output)
+        } finally {
+            disableColors()
+        }
+    }
+
     // ── OSC window title ──────────────────────────────────────────────────────
 
     @Test
@@ -272,5 +293,82 @@ class KliqueTest {
         assertTrue(!bar.done)
         bar + 5
         assertTrue(bar.done)
+    }
+
+    @Test
+    fun `ProgressBar emits OSC 9 semicolon 4 state 1 with percent on render`() {
+        enableColors()
+        try {
+            val buf = ByteArrayOutputStream()
+            val stream = PrintStream(buf)
+            val bar = ProgressBar(10)
+            bar.tick(5, false)   // advance to 50%, no render
+            bar.render(stream)
+            val output = buf.toString()
+            val esc = 27.toChar()
+            val bel = 7.toChar()
+            assertTrue("${esc}]9;4;1;50${bel}" in output)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `ProgressBar emits OSC 9 semicolon 4 state 0 on completion`() {
+        enableColors()
+        try {
+            val buf = ByteArrayOutputStream()
+            val stream = PrintStream(buf)
+            val bar = ProgressBar(4)
+            bar.tick(4, false)   // complete, no render
+            bar.render(stream)
+            val output = buf.toString()
+            val esc = 27.toChar()
+            val bel = 7.toChar()
+            assertTrue("${esc}]9;4;0;100${bel}" in output)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `progressBar applies barColor to bar output`() {
+        enableColors()
+        try {
+            val bar = progressBar(10, progressBarConfig {
+                barColor("red")
+                format = ":bar"
+            })
+            bar.tick(5, false)
+            val buf = ByteArrayOutputStream()
+            bar.render(PrintStream(buf))
+            val output = buf.toString()
+            assertTrue(output.isNotBlank())
+            // ANSI color codes are present (ESC [ ... m sequences)
+            val esc = 27.toChar()
+            assertTrue(esc in output)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `progressBar applies gradient to bar output`() {
+        enableColors()
+        try {
+            val bar = progressBar(10, progressBarConfig {
+                barGradient(rgb(255, 0, 0), rgb(0, 0, 255))
+                format = ":bar"
+            })
+            bar.tick(5, false)
+            val buf = ByteArrayOutputStream()
+            bar.render(PrintStream(buf))
+            val output = buf.toString()
+            assertTrue(output.isNotBlank())
+            val esc = 27.toChar()
+            assertTrue(esc in output)
+        } finally {
+            disableColors()
+        }
     }
 }

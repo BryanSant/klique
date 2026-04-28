@@ -3,6 +3,8 @@ package io.github.bryansant.klique
 import io.github.bryansant.klique.components.IterableProgressBar
 import io.github.bryansant.klique.components.ProgressBar
 import io.github.bryansant.klique.config.ProgressBarConfig
+import io.github.bryansant.klique.spi.AnsiCode
+import io.github.bryansant.klique.spi.RGBAnsiCode
 
 enum class ProgressBarPreset(
     val length: Int,
@@ -38,8 +40,22 @@ operator fun ProgressBar.plus(amount: Int): ProgressBar = tick(amount)
 /** `true` once all ticks have been consumed. */
 val ProgressBar.done: Boolean get() = isDone()
 
-fun smoothProgressBar(total: Int, width: Int = 40): ProgressBar =
-    ProgressBar(total, ProgressBarConfig.fromPreset(ProgressBarPreset.SMOOTH).apply { length = width }.build())
+fun smoothProgressBar(
+    total: Int,
+    width: Int = 40,
+    prefix: String = "",
+    barColor: AnsiCode? = null,
+    barGradientFrom: RGBAnsiCode? = null,
+    barGradientTo: RGBAnsiCode? = null,
+): ProgressBar {
+    val fmt = if (prefix.isEmpty()) ":bar :percent%" else "$prefix :bar :percent%"
+    return ProgressBar(total, ProgressBarConfig.fromPreset(ProgressBarPreset.SMOOTH).apply {
+        length = width
+        format = fmt
+        if (barColor != null) barColor(barColor)
+        if (barGradientFrom != null && barGradientTo != null) barGradient(barGradientFrom, barGradientTo)
+    }.build())
+}
 
 fun <T> Collection<T>.withSmoothProgress(action: (T) -> Unit) {
     val bar = smoothProgressBar(size)

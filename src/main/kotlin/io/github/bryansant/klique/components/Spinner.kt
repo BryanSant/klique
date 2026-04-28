@@ -1,6 +1,7 @@
 package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.SpinnerConfig
+import io.github.bryansant.klique.emitOsc94
 import io.github.bryansant.klique.internal.utils.AnsiDetector
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.style.StyleBuilder
@@ -12,9 +13,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 private val ESC = 27.toChar()
 private const val HIDE_CURSOR_SUFFIX = "[?25l"
 private const val SHOW_CURSOR_SUFFIX = "[?25h"
+private const val ERASE_TO_EOL_SUFFIX = "[K"
 
 private fun hideCursorSeq() = "$ESC$HIDE_CURSOR_SUFFIX"
 private fun showCursorSeq() = "$ESC$SHOW_CURSOR_SUFFIX"
+private fun eraseToEolSeq() = "$ESC$ERASE_TO_EOL_SUFFIX"
+
+private fun terminalWidth(): Int = System.getenv("COLUMNS")?.toIntOrNull()?.takeIf { it > 0 } ?: 80
 
 class Spinner(
     var label: String = "",
@@ -36,6 +41,7 @@ class Spinner(
             if (shutdownHookRegistered.compareAndSet(false, true)) {
                 Runtime.getRuntime().addShutdownHook(Thread {
                     if (AnsiDetector.ansiEnabled()) {
+                        emitOsc94(System.out, 0)
                         System.out.print(showCursorSeq())
                         System.out.flush()
                     }
@@ -51,11 +57,16 @@ class Spinner(
         running = true
         ensureShutdownHook()
         hideCursor(System.out)
+        emitOsc94(System.out, 3)
         thread = Thread {
             var idx = 0
             while (running) {
                 val frame = config.frames[idx % config.frames.size]
-                System.out.print("\r$frame ${this.label}")
+                val cols = terminalWidth()
+                val rawLabel = this.label
+                // +2 = frame glyph + space; truncate so the full line stays within one terminal row
+                val displayLabel = if (rawLabel.length > cols - 2) rawLabel.take(cols - 3) + "…" else rawLabel
+                System.out.print("\r$frame $displayLabel${eraseToEolSeq()}")
                 System.out.flush()
                 idx++
                 try {
@@ -64,7 +75,7 @@ class Spinner(
                     break
                 }
             }
-            System.out.print("\r[K")
+                        System.out.print("\r${eraseToEolSeq()}")
             System.out.flush()
             showCursor(System.out)
         }.also {
@@ -79,6 +90,7 @@ class Spinner(
         running = false
         thread?.join(500)
         thread = null
+        emitOsc94(System.out, 0)
     }
 
     override fun close() = stop()
@@ -98,6 +110,7 @@ class Spinner(
     fun stop(stream: PrintStream): Spinner {
         if (stopped) return this
         stopped = true
+        emitOsc94(stream, 0)
         showCursor(stream)
         stream.println()
         stream.flush()
@@ -110,9 +123,10 @@ class Spinner(
 
     fun spin(durationMs: Long): Spinner {
         require(durationMs >= 0) { "Duration cannot be negative" }
-        val hook = Thread { showCursor(System.out) }
+        val hook = Thread { emitOsc94(System.out, 0); showCursor(System.out) }
         Runtime.getRuntime().addShutdownHook(hook)
         hideCursor(System.out)
+        emitOsc94(System.out, 3)
         try {
             val end = System.currentTimeMillis() + durationMs
             this.render()
@@ -143,7 +157,7 @@ class Spinner(
     }
 
     override fun render(stream: PrintStream) {
-        stream.print("\r${get()}")
+        stream.print("\r${get()}${eraseToEolSeq()}")
         stream.flush()
     }
 

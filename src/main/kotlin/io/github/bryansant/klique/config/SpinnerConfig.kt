@@ -11,6 +11,7 @@ data class SpinnerConfig(
 ) {
     companion object {
         val DEFAULT = SpinnerConfig()
+        val STAR = SpinnerConfig(frames = listOf("·", "✶", "✸", "✹", "✺", "✹", "✷", "·"))
     }
 
     override fun equals(other: Any?): Boolean = other is SpinnerConfig &&
