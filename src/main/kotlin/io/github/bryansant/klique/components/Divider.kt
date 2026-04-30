@@ -1,7 +1,6 @@
 package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.DividerConfig
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.style.StyleBuilder
 
@@ -32,7 +31,7 @@ class Divider(val width: Int, val config: DividerConfig = DividerConfig.DEFAULT)
         }
 
         val contentLength = config.parser.getOriginalString(title).length + 2
-        val content = Constants.BLANK + StringUtils.parse(title, config.parser) + Constants.BLANK
+        val content = " " + StringUtils.parse(title, config.parser) + " "
         val remaining = width - contentLength
         val left = remaining / 2
         val right = remaining - left

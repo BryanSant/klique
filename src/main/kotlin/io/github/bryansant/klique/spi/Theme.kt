@@ -1,6 +1,6 @@
 package io.github.bryansant.klique.spi
 
-interface CliqueTheme {
+interface Theme {
     fun themeName(): String
     fun styles(): Map<String, AnsiCode>
     fun author(): String = ""

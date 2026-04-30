@@ -1,7 +1,7 @@
 package io.github.bryansant.klique.internal.utils
 
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.internal.Cell
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.parser.MarkupParser
 import io.github.bryansant.klique.spi.AnsiCode
 import io.github.bryansant.klique.style.StyleCode
@@ -20,8 +20,8 @@ internal object StringUtils {
         while (i < styled.length) {
             val c = styled[i]
             when {
-                c == Constants.ESC && nextCharEquals(styled, i + 1, Constants.LBRACKET) -> inEscape = true
-                inEscape && c == Constants.ANSI_END -> inEscape = false
+                c == ESC[0] && nextCharEquals(styled, i + 1, '[') -> inEscape = true
+                inEscape && c == 'm' -> inEscape = false
                 !inEscape -> clean.append(c)
             }
             i++

@@ -1,6 +1,6 @@
 package io.github.bryansant.klique.parser
 
-import io.github.bryansant.klique.internal.Constants
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.spi.AnsiCode
 
 internal object Tokenizer {
@@ -27,7 +27,7 @@ internal object Tokenizer {
         for (i in 0 until len) {
             val c = input[i]
             if (c == FORM_START &&
-                charNotEquals(input, i - 1, Constants.ESC) &&
+                charNotEquals(input, i - 1, ESC[0]) &&
                 charNotEquals(input, i - 1, ESCAPE_SEQUENCE)
             ) {
                 fcDepth = 0

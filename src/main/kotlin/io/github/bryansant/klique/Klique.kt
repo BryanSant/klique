@@ -25,7 +25,7 @@ import io.github.bryansant.klique.parser.MarkupParser
 import io.github.bryansant.klique.parser.ParserConfig
 import io.github.bryansant.klique.parser.StyleContext
 import io.github.bryansant.klique.spi.AnsiCode
-import io.github.bryansant.klique.spi.CliqueTheme
+import io.github.bryansant.klique.spi.Theme
 import io.github.bryansant.klique.spi.RGBAnsiCode
 import io.github.bryansant.klique.style.Ink
 import io.github.bryansant.klique.style.StyleBuilder
@@ -105,13 +105,13 @@ fun enableColors() = AnsiDetector.enableColors()
 fun registerStyle(name: String, code: AnsiCode) = GlobalStyleRegistry.registerStyle(name, code)
 fun registerStyles(codes: Map<String, AnsiCode>) = GlobalStyleRegistry.registerStyles(codes)
 
-private val registeredThemes = mutableListOf<CliqueTheme>()
+private val registeredThemes = mutableListOf<Theme>()
 
-fun registerTheme(theme: CliqueTheme) {
+fun registerTheme(theme: Theme) {
     registeredThemes.add(theme)
     GlobalStyleRegistry.registerStyles(theme.styles())
 }
 
-fun findAvailableThemes(): List<CliqueTheme> = registeredThemes.toList()
+fun findAvailableThemes(): List<Theme> = registeredThemes.toList()
 
-fun findTheme(name: String): CliqueTheme? = registeredThemes.find { it.themeName() == name }
+fun findTheme(name: String): Theme? = registeredThemes.find { it.themeName() == name }

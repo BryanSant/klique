@@ -1,6 +1,8 @@
 package io.github.bryansant.klique
 
 import io.github.bryansant.klique.components.ProgressBar
+import io.github.bryansant.klique.spi.BEL
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.components.Spinner
 import io.github.bryansant.klique.components.withSpinner
 import io.github.bryansant.klique.config.progressBarConfig
@@ -220,9 +222,7 @@ class KliqueTest {
             val spinner = Spinner("Working")
             spinner.stop(stream)
             val output = buf.toString()
-            val esc = 27.toChar()
-            val bel = 7.toChar()
-            assertTrue("${esc}]9;4;0;0${bel}" in output)
+            assertTrue("${ESC}]9;4;0;0${BEL}" in output)
         } finally {
             disableColors()
         }
@@ -231,8 +231,8 @@ class KliqueTest {
     // ── OSC window title ──────────────────────────────────────────────────────
 
     @Test
-    fun `setWindowTitle does not throw`() {
-        setWindowTitle("Klique Test")
+    fun `setSystemTitle does not throw`() {
+        setSystemTitle("Klique Test")
     }
 
     // ── SmoothProgressBar ─────────────────────────────────────────────────────
@@ -305,9 +305,7 @@ class KliqueTest {
             bar.tick(5, false)   // advance to 50%, no render
             bar.render(stream)
             val output = buf.toString()
-            val esc = 27.toChar()
-            val bel = 7.toChar()
-            assertTrue("${esc}]9;4;1;50${bel}" in output)
+            assertTrue("${ESC}]9;4;1;50${BEL}" in output)
         } finally {
             disableColors()
         }
@@ -323,9 +321,7 @@ class KliqueTest {
             bar.tick(4, false)   // complete, no render
             bar.render(stream)
             val output = buf.toString()
-            val esc = 27.toChar()
-            val bel = 7.toChar()
-            assertTrue("${esc}]9;4;0;100${bel}" in output)
+            assertTrue("${ESC}]9;4;0;100${BEL}" in output)
         } finally {
             disableColors()
         }
@@ -345,8 +341,7 @@ class KliqueTest {
             val output = buf.toString()
             assertTrue(output.isNotBlank())
             // ANSI color codes are present (ESC [ ... m sequences)
-            val esc = 27.toChar()
-            assertTrue(esc in output)
+            assertTrue(ESC in output)
         } finally {
             disableColors()
         }
@@ -365,8 +360,7 @@ class KliqueTest {
             bar.render(PrintStream(buf))
             val output = buf.toString()
             assertTrue(output.isNotBlank())
-            val esc = 27.toChar()
-            assertTrue(esc in output)
+            assertTrue(ESC in output)
         } finally {
             disableColors()
         }

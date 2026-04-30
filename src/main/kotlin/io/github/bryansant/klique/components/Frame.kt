@@ -4,7 +4,6 @@ import io.github.bryansant.klique.FrameAlign
 import io.github.bryansant.klique.config.FrameConfig
 import io.github.bryansant.klique.internal.BorderChars
 import io.github.bryansant.klique.internal.Cell
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.internal.FrameNode
 import io.github.bryansant.klique.internal.utils.BoxUtils
 import io.github.bryansant.klique.internal.utils.StringUtils
@@ -13,7 +12,7 @@ import io.github.bryansant.klique.style.StyleCode
 class Frame(val config: FrameConfig = FrameConfig.DEFAULT) : Component {
 
     private val nodes = mutableListOf<FrameNode>()
-    private var titleText: String = Constants.EMPTY
+    private var titleText: String = ""
     private var titleAlign: FrameAlign = FrameAlign.CENTER
     private var fixedWidth: Int = 0
 
@@ -73,7 +72,7 @@ class Frame(val config: FrameConfig = FrameConfig.DEFAULT) : Component {
         sb.append(borderChars.bottomLeft)
             .append(borderChars.hLine.repeat(givenWidth))
             .append(borderChars.bottomRight)
-            .append(Constants.NEWLINE)
+            .append("\n")
 
         return sb.toString()
     }
@@ -81,28 +80,28 @@ class Frame(val config: FrameConfig = FrameConfig.DEFAULT) : Component {
     private fun alignNode(node: FrameNode, availableWidth: Int, sb: StringBuilder) {
         val padding = config.padding
         val rem = maxOf(0, availableWidth - node.maxWidth())
-        val fixed = Constants.BLANK.repeat(padding)
+        val fixed = " ".repeat(padding)
 
         for (line in node.lines()) {
             val lineWidth = line.width
             val content = line.styledText
             when (node.align()) {
                 FrameAlign.RIGHT -> sb.append(borderChars.vLine).append(fixed)
-                    .append(Constants.BLANK.repeat(rem)).append(content).append(fixed)
-                    .append(Constants.BLANK.repeat(maxOf(0, availableWidth - lineWidth - rem)))
-                    .append(borderChars.vLine).append(Constants.NEWLINE)
+                    .append(" ".repeat(rem)).append(content).append(fixed)
+                    .append(" ".repeat(maxOf(0, availableWidth - lineWidth - rem)))
+                    .append(borderChars.vLine).append("\n")
 
                 FrameAlign.LEFT -> sb.append(borderChars.vLine).append(fixed).append(content)
-                    .append(Constants.BLANK.repeat(maxOf(0, availableWidth - lineWidth)))
-                    .append(fixed).append(borderChars.vLine).append(Constants.NEWLINE)
+                    .append(" ".repeat(maxOf(0, availableWidth - lineWidth)))
+                    .append(fixed).append(borderChars.vLine).append("\n")
 
                 FrameAlign.CENTER -> {
                     val leftPad = rem / 2
                     val rightPad = (availableWidth - lineWidth) - leftPad
                     sb.append(borderChars.vLine).append(fixed)
-                        .append(Constants.BLANK.repeat(leftPad)).append(content)
-                        .append(Constants.BLANK.repeat(rightPad)).append(fixed)
-                        .append(borderChars.vLine).append(Constants.NEWLINE)
+                        .append(" ".repeat(leftPad)).append(content)
+                        .append(" ".repeat(rightPad)).append(fixed)
+                        .append(borderChars.vLine).append("\n")
                 }
             }
         }
@@ -117,13 +116,13 @@ class Frame(val config: FrameConfig = FrameConfig.DEFAULT) : Component {
             }
             sb.append(borderChars.topLeft)
                 .append(borderChars.hLine.repeat(leftWidth))
-                .append(Constants.BLANK).append(parsedTitle.styledText).append(Constants.BLANK)
+                .append(" ").append(parsedTitle.styledText).append(" ")
                 .append(borderChars.hLine.repeat(givenWidth - titleWidth - leftWidth))
-                .append(borderChars.topRight).append(Constants.NEWLINE)
+                .append(borderChars.topRight).append("\n")
         } else {
             sb.append(borderChars.topLeft)
                 .append(borderChars.hLine.repeat(givenWidth))
-                .append(borderChars.topRight).append(Constants.NEWLINE)
+                .append(borderChars.topRight).append("\n")
         }
     }
 }

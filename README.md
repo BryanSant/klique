@@ -267,7 +267,7 @@ spinner.stop()
 Set the terminal window or tab title via OSC 2. Supported by most modern terminal emulators.
 
 ```kotlin
-setWindowTitle("Build — my-project")
+setSystemTitle("Build — my-project")
 ```
 
 ---

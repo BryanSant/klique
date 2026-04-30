@@ -3,6 +3,8 @@ plugins {
     `maven-publish`
     signing
     id("com.gradleup.nmcp") version "1.4.4"
+    id("com.gradleup.shadow") version "9.4.1"
+    id("org.graalvm.buildtools.native") version "1.1.0"
 }
 
 group = "io.github.bryansant"
@@ -13,6 +15,40 @@ version = System.getenv("GITHUB_REF_NAME")?.let { ref ->
 
 kotlin {
     jvmToolchain(25)
+}
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    archiveFileName.set("k.jar")
+    manifest {
+        attributes("Main-Class" to "io.github.bryansant.klique.MainKt")
+    }
+}
+
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName.set("k")
+            mainClass.set("io.github.bryansant.klique.MainKt")
+            buildArgs.addAll(
+                "-H:+UnlockExperimentalVMOptions",
+                "--no-fallback",
+                "-Os",
+                "-H:+OmitInlinedMethodDebugLineInfo",
+                "-H:-StackTrace",
+                "--gc=epsilon"
+            )
+        }
+    }
+}
+
+tasks.register<Exec>("compressBinary") {
+    val binaryPath = layout.buildDirectory.file("native/nativeCompile/k").get().asFile.absolutePath
+    commandLine("upx", "--best", "--lzma", binaryPath)
+    isIgnoreExitValue = true
+}
+
+tasks.named("nativeCompile") {
+    finalizedBy("compressBinary")
 }
 
 dependencies {
@@ -73,8 +109,7 @@ nmcp {
     publishAllPublicationsToCentralPortal {
         username = System.getenv("CENTRAL_PORTAL_USERNAME") ?: ""
         password = System.getenv("CENTRAL_PORTAL_PASSWORD") ?: ""
-        //publishingType = "AUTOMATIC"
-        publishingType = "USER_MANAGED"
+        publishingType = "AUTOMATIC"
     }
 }
 

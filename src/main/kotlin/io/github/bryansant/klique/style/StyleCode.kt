@@ -1,8 +1,8 @@
 package io.github.bryansant.klique.style
 
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.spi.AnsiCode
 
-private val ESC = 27.toChar()
 private fun ansi(code: String) = "$ESC[$code"
 
 enum class StyleCode(private val seq: String) : AnsiCode {

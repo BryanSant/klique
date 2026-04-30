@@ -1,6 +1,8 @@
 package io.github.bryansant.klique
 
 import io.github.bryansant.klique.internal.utils.AnsiDetector
+import io.github.bryansant.klique.spi.BEL
+import io.github.bryansant.klique.spi.ESC
 import java.io.PrintStream
 
 /**
@@ -11,17 +13,28 @@ import java.io.PrintStream
  * title (via PROMPT_COMMAND or precmd) when the process exits.
  *
  * ```kotlin
- * setWindowTitle("Build — my-project")
+ * setSystemTitle("Build — my-project")
  * ```
  */
-fun setWindowTitle(title: String) {
+fun setSystemTitle(title: String) {
     if (!AnsiDetector.ansiEnabled()) return
-    print("${ESC_CHAR}]2;$title$BEL")
+    print("${ESC}]2;$title$BEL")
     System.out.flush()
 }
 
-private val BEL = 7.toChar()
-private val ESC_CHAR = 27.toChar()
+fun sendSystemNotification(title: String, message: String) {
+    if (!AnsiDetector.ansiEnabled()) return
+    // OSC 9: iTerm2 / Windows Terminal / ConEmu
+    // Usually just takes the message
+    print("${ESC}]9;$title: $message$BEL")
+
+    // OSC 777: rxvt-unicode / VTE terminals
+    print("${ESC}]777;notify;$title;$message$BEL")
+
+    // OSC 99: Kitty / Ghostty
+    // Simple version (no chunks)
+    print("${ESC}]99;;$title: $message$BEL")
+}
 
 /**
  * Emits an OSC 9;4 terminal progress sequence to [stream].
@@ -31,6 +44,6 @@ private val ESC_CHAR = 27.toChar()
  */
 internal fun emitOsc94(stream: PrintStream, state: Int, value: Int = 0) {
     if (!AnsiDetector.ansiEnabled()) return
-    stream.print("${ESC_CHAR}]9;4;$state;$value$BEL")
+    stream.print("${ESC}]9;4;$state;$value$BEL")
     stream.flush()
 }

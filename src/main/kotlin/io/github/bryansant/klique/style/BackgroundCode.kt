@@ -1,8 +1,8 @@
 package io.github.bryansant.klique.style
 
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.spi.AnsiCode
 
-private val ESC = 27.toChar()
 private fun bg(n: Int) = "$ESC[${n}m"
 
 enum class BackgroundCode(private val seq: String) : AnsiCode {

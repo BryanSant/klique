@@ -1,7 +1,6 @@
 package io.github.bryansant.klique.internal.utils
 
 import io.github.bryansant.klique.CellAlign
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.internal.WidthAwareList
 
 internal object TableUtils {
@@ -13,7 +12,7 @@ internal object TableUtils {
         styled: String,
         vLine: String,
     ): String {
-        val spaces = Constants.BLANK.repeat(offset)
+        val spaces = " ".repeat(offset)
         return when (align) {
             CellAlign.LEFT -> sb.append(styled).append(spaces).append(vLine).toString()
             CellAlign.RIGHT -> sb.append(spaces).append(styled).append(vLine).toString()
@@ -22,8 +21,8 @@ internal object TableUtils {
                 val rem = len % 2
                 val leftOffset = (len - rem) - (len / 2)
                 val rightOffset = len - leftOffset
-                sb.append(Constants.BLANK.repeat(leftOffset)).append(styled)
-                    .append(Constants.BLANK.repeat(rightOffset)).append(vLine).toString()
+                sb.append(" ".repeat(leftOffset)).append(styled)
+                    .append(" ".repeat(rightOffset)).append(vLine).toString()
             }
         }
     }

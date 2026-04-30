@@ -2,7 +2,6 @@ package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.ProgressBarConfig
 import io.github.bryansant.klique.emitOsc94
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.internal.Gradient
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.style.StyleBuilder

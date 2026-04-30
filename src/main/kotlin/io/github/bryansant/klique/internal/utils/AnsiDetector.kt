@@ -1,8 +1,20 @@
 package io.github.bryansant.klique.internal.utils
 
-import io.github.bryansant.klique.internal.Constants
-
 internal object AnsiDetector {
+
+    private const val TERM = "TERM"
+    private const val PLAIN = "plain"
+    private const val DUMB = "dumb"
+    private const val NO_COLOR = "NO_COLOR"
+    private const val COLOR_PROP = "klique.color"
+    private const val ALWAYS = "always"
+    private const val NEVER = "never"
+    private const val OS_NAME = "os.name"
+    private const val WIN = "win"
+    private const val CLI_COLOR_FORCE = "CLICOLOR_FORCE"
+    private const val COLOR_TERM = "COLORTERM"
+    private const val WT_SESSION = "WT_SESSION"
+    private const val FORCE_COLOR = "FORCE_COLOR"
 
     @Volatile
     private var ansiEnabled: Boolean = autoDetect()
@@ -14,42 +26,42 @@ internal object AnsiDetector {
     fun ansiEnabled(): Boolean = ansiEnabled
 
     fun enableColors() {
-        System.setProperty(Constants.CLIQUE_COLOR, Constants.ALWAYS)
+        System.setProperty(COLOR_PROP, ALWAYS)
         ansiEnabled = true
     }
 
     fun disableColors() {
-        System.setProperty(Constants.CLIQUE_COLOR, Constants.NEVER)
+        System.setProperty(COLOR_PROP, NEVER)
         ansiEnabled = false
     }
 
     private fun autoDetect(): Boolean {
-        val noColor = System.getenv(Constants.NO_COLOR)
+        val noColor = System.getenv(NO_COLOR)
         if (!noColor.isNullOrEmpty()) return false
 
-        val cliqueColor = System.getProperty(Constants.CLIQUE_COLOR)
-        if (cliqueColor == Constants.ALWAYS) return true
-        if (cliqueColor == Constants.NEVER) return false
+        val cliqueColor = System.getProperty(COLOR_PROP)
+        if (cliqueColor == ALWAYS) return true
+        if (cliqueColor == NEVER) return false
 
-        val cliColorForce = System.getenv(Constants.CLI_COLOR_FORCE)
+        val cliColorForce = System.getenv(CLI_COLOR_FORCE)
         if (!cliColorForce.isNullOrEmpty() && cliColorForce != "0") return true
 
-        val forceColor = System.getenv(Constants.FORCE_COLOR)
+        val forceColor = System.getenv(FORCE_COLOR)
         if (!forceColor.isNullOrEmpty()) return true
 
-        val colorTerm = System.getenv(Constants.COLOR_TERM)
+        val colorTerm = System.getenv(COLOR_TERM)
         if (colorTerm != null) return true
 
-        val os = System.getProperty(Constants.OS_NAME, Constants.EMPTY).lowercase()
-        if (System.console() == null && !os.contains(Constants.WIN)) return false
+        val os = System.getProperty(OS_NAME, "").lowercase()
+        if (System.console() == null && !os.contains(WIN)) return false
 
-        val term = System.getenv(Constants.TERM)
+        val term = System.getenv(TERM)
         if (term == null) {
-            if (System.getenv(Constants.WT_SESSION) != null) return true
-            return os.contains(Constants.WIN)
+            if (System.getenv(WT_SESSION) != null) return true
+            return os.contains(WIN)
         }
 
-        return !term.equals(Constants.DUMB, ignoreCase = true) &&
-            !term.equals(Constants.PLAIN, ignoreCase = true)
+        return !term.equals(DUMB, ignoreCase = true) &&
+            !term.equals(PLAIN, ignoreCase = true)
     }
 }

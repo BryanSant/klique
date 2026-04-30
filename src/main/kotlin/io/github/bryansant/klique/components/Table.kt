@@ -3,7 +3,6 @@ package io.github.bryansant.klique.components
 import io.github.bryansant.klique.TableType
 import io.github.bryansant.klique.config.TableConfig
 import io.github.bryansant.klique.internal.Cell
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.internal.WidthAwareList
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.internal.utils.TableUtils
@@ -100,7 +99,7 @@ internal class AsciiTable(config: TableConfig) : AbstractTable(config) {
         val headerAndFooter = appendBorder(sb)
         sb.setLength(0)
 
-        tableBuilder.append(headerAndFooter).append(Constants.NEWLINE)
+        tableBuilder.append(headerAndFooter).append("\n")
 
         for (list in rows) {
             tableBuilder.append(vLine)
@@ -114,8 +113,8 @@ internal class AsciiTable(config: TableConfig) : AbstractTable(config) {
                 tableBuilder.append(TableUtils.align(cellAlign, sb, offset, styledCell, vLine))
                 sb.setLength(0)
             }
-            tableBuilder.append(Constants.NEWLINE)
-            tableBuilder.append(headerAndFooter).append(Constants.NEWLINE)
+            tableBuilder.append("\n")
+            tableBuilder.append(headerAndFooter).append("\n")
         }
 
         return tableBuilder.toString().also { cachedString = it }
@@ -168,7 +167,7 @@ internal open class BoxDrawTable(config: TableConfig) : AbstractTable(config) {
         val headerEnd = drawEdges(helperBuilder, leftJoin, cross, rightJoin)
         helperBuilder.setLength(0)
 
-        tableBuilder.append(header).append(Constants.NEWLINE)
+        tableBuilder.append(header).append("\n")
 
         for (i in rows.indices) {
             val list = rows[i]
@@ -183,8 +182,8 @@ internal open class BoxDrawTable(config: TableConfig) : AbstractTable(config) {
                 tableBuilder.append(TableUtils.align(cellAlign, helperBuilder, offset, styledCell, vLine))
                 helperBuilder.setLength(0)
             }
-            if (i == 0) tableBuilder.append(Constants.NEWLINE).append(headerEnd)
-            tableBuilder.append(Constants.NEWLINE)
+            if (i == 0) tableBuilder.append("\n").append(headerEnd)
+            tableBuilder.append("\n")
         }
         tableBuilder.append(footer)
         return tableBuilder.toString().also { cachedString = it }
@@ -209,7 +208,7 @@ internal class RoundedBoxDrawTable(config: TableConfig) : BoxDrawTable(config) {
 }
 
 internal class CompactTable(config: TableConfig) : AbstractTable(config) {
-    private val vLine: String = Constants.BLANK.repeat(config.padding)
+    private val vLine: String = " ".repeat(config.padding)
     private var hLine = "-"
 
     init { colorBorders() }
@@ -232,15 +231,15 @@ internal class CompactTable(config: TableConfig) : AbstractTable(config) {
                 val longest = columns[j].longest
                 val offset = longest - displayWidth
                 cellAlign = TableUtils.chooseColAlignment(j, cellAlign, config.columnAlignment)
-                tableBuilder.append(TableUtils.align(cellAlign, sb, offset, styledCell, Constants.EMPTY))
+                tableBuilder.append(TableUtils.align(cellAlign, sb, offset, styledCell, ""))
                 if (j < list.size() - 1) tableBuilder.append(vLine)
                 sb.setLength(0)
             }
             if (i == 0) {
-                tableBuilder.append(Constants.NEWLINE).append(appendHeader(sb))
+                tableBuilder.append("\n").append(appendHeader(sb))
                 sb.setLength(0)
             }
-            tableBuilder.append(Constants.NEWLINE)
+            tableBuilder.append("\n")
         }
         return tableBuilder.toString().also { cachedString = it }
     }
@@ -288,7 +287,7 @@ internal class MarkdownTable(config: TableConfig) : AbstractTable(config) {
                 sb.setLength(0)
             }
             if (i == 0) {
-                tableBuilder.append(Constants.NEWLINE)
+                tableBuilder.append("\n")
                 sb.append(vLine)
                 for (col in columns) {
                     repeat(col.longest + config.padding) { sb.append(hLine) }
@@ -297,7 +296,7 @@ internal class MarkdownTable(config: TableConfig) : AbstractTable(config) {
                 tableBuilder.append(sb.toString())
                 sb.setLength(0)
             }
-            tableBuilder.append(Constants.NEWLINE)
+            tableBuilder.append("\n")
         }
         return tableBuilder.toString().also { cachedString = it }
     }

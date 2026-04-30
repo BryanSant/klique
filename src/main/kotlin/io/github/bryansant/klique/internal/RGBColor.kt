@@ -1,5 +1,6 @@
 package io.github.bryansant.klique.internal
 
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.spi.RGBAnsiCode
 
 internal class RGBColor(
@@ -17,8 +18,7 @@ internal class RGBColor(
 
     private val seq: String = run {
         val type = if (background) 48 else 38
-        val esc = 27.toChar()
-        "$esc[${type};2;${r};${g};${b}m"
+        "$ESC[${type};2;${r};${g};${b}m"
     }
 
     override fun ansiSequence(): String = seq

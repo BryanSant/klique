@@ -1,7 +1,6 @@
 package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.TreeConfig
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.style.StyleBuilder
 
@@ -38,9 +37,9 @@ class Tree private constructor(
 
     override fun get(): String {
         val sb = StyleBuilder()
-        sb.appendAndReset(label).appendAndReset(Constants.NEWLINE)
+        sb.appendAndReset(label).appendAndReset("\n")
         for (i in children.indices) {
-            buildTree(children[i], Constants.EMPTY, i == children.lastIndex, sb)
+            buildTree(children[i], "", i == children.lastIndex, sb)
         }
         return StringUtils.parse(sb.toString(), config.parser)
     }
@@ -50,7 +49,7 @@ class Tree private constructor(
         sb.append(prefix, *config.connectorColor)
             .appendAndReset(connector)
             .appendAndReset(node.label)
-            .appendAndReset(Constants.NEWLINE)
+            .appendAndReset("\n")
 
         val childPrefix = prefix + if (isLast) SPACE else CONNECTING_LINE
         for (i in node.children.indices) {

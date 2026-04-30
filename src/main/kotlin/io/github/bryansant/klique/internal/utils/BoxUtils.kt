@@ -4,7 +4,6 @@ import io.github.bryansant.klique.TextAlign
 import io.github.bryansant.klique.internal.BorderChars
 import io.github.bryansant.klique.internal.BoxWrapper
 import io.github.bryansant.klique.internal.Cell
-import io.github.bryansant.klique.internal.Constants
 import io.github.bryansant.klique.spi.AnsiCode
 import io.github.bryansant.klique.style.StyleCode
 
@@ -23,24 +22,24 @@ internal object BoxUtils {
     ) {
         val cell = wordWrap[idx]
         val ss = cell.styledText
-        val fixed = Constants.BLANK.repeat(padding)
+        val fixed = " ".repeat(padding)
         val fillSpace = spaces.length - cell.width - (padding * 2)
 
         when (textAlign) {
             TextAlign.TOP_LEFT, TextAlign.CENTER_LEFT, TextAlign.BOTTOM_LEFT ->
                 sb.append(vLine).append(fixed).append(ss).append(RESET)
-                    .append(Constants.BLANK.repeat(maxOf(0, fillSpace))).append(fixed).append(vLine).append(Constants.NEWLINE)
+                    .append(" ".repeat(maxOf(0, fillSpace))).append(fixed).append(vLine).append("\n")
 
             TextAlign.TOP_RIGHT, TextAlign.CENTER_RIGHT, TextAlign.BOTTOM_RIGHT ->
-                sb.append(vLine).append(fixed).append(Constants.BLANK.repeat(maxOf(0, fillSpace)))
-                    .append(ss).append(RESET).append(fixed).append(vLine).append(Constants.NEWLINE)
+                sb.append(vLine).append(fixed).append(" ".repeat(maxOf(0, fillSpace)))
+                    .append(ss).append(RESET).append(fixed).append(vLine).append("\n")
 
             TextAlign.TOP_CENTER, TextAlign.CENTER, TextAlign.BOTTOM_CENTER -> {
                 val leftFill = fillSpace / 2
                 val rightFill = fillSpace - leftFill
-                sb.append(vLine).append(fixed).append(Constants.BLANK.repeat(maxOf(0, leftFill)))
-                    .append(ss).append(RESET).append(Constants.BLANK.repeat(maxOf(0, rightFill)))
-                    .append(fixed).append(vLine).append(Constants.NEWLINE)
+                sb.append(vLine).append(fixed).append(" ".repeat(maxOf(0, leftFill)))
+                    .append(ss).append(RESET).append(" ".repeat(maxOf(0, rightFill)))
+                    .append(fixed).append(vLine).append("\n")
             }
         }
     }
@@ -48,10 +47,10 @@ internal object BoxUtils {
     fun drawBox(sb: StringBuilder, boxWrapper: BoxWrapper, textAlign: TextAlign) {
         val width = boxWrapper.width
         val padding = boxWrapper.configuration.padding
-        val spaces = Constants.BLANK.repeat(width)
+        val spaces = " ".repeat(width)
         val hLines = boxWrapper.hLine.repeat(width)
         sb.setLength(0)
-        sb.append(boxWrapper.tLeft).append(hLines).append(boxWrapper.tRight).append(Constants.NEWLINE)
+        sb.append(boxWrapper.tLeft).append(hLines).append(boxWrapper.tRight).append("\n")
 
         val textHeight = boxWrapper.wordWrap.size
         val availableLines = boxWrapper.height
@@ -65,7 +64,7 @@ internal object BoxUtils {
             if (i >= startLine && i < startLine + textHeight) {
                 alignText(sb, i - startLine, textAlign, spaces, boxWrapper.wordWrap, boxWrapper.vLine, padding)
             } else {
-                sb.append(boxWrapper.vLine).append(spaces).append(boxWrapper.vLine).append(Constants.NEWLINE)
+                sb.append(boxWrapper.vLine).append(spaces).append(boxWrapper.vLine).append("\n")
             }
         }
 

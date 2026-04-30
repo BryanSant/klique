@@ -1,5 +1,6 @@
 package io.github.bryansant.klique.internal
 
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.spi.RGBAnsiCode
 import io.github.bryansant.klique.style.StyleCode
@@ -15,13 +16,13 @@ internal class Gradient(private val from: RGBAnsiCode, private val to: RGBAnsiCo
         while (i < text.length) {
             val ch = text[i]
             when {
-                ch == Constants.ESC && StringUtils.nextCharEquals(text, i + 1, Constants.LBRACKET) -> {
+                ch == ESC[0] && StringUtils.nextCharEquals(text, i + 1, '[') -> {
                     inEscape = true
                     sb.append(ch)
                 }
                 inEscape -> {
                     sb.append(ch)
-                    if (ch == Constants.ANSI_END) inEscape = false
+                    if (ch == 'm') inEscape = false
                 }
                 else -> {
                     val t = colorIdx.toDouble() / maxOf(text.length - 1, 1).toDouble()

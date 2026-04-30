@@ -1,16 +1,17 @@
 package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.SpinnerConfig
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.emitOsc94
+import io.github.bryansant.klique.internal.RGBColor
 import io.github.bryansant.klique.internal.utils.AnsiDetector
 import io.github.bryansant.klique.internal.utils.StringUtils
+import io.github.bryansant.klique.spi.RGBAnsiCode
 import io.github.bryansant.klique.style.StyleBuilder
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
-// Cursor sequences using numeric codes to avoid literal ESC bytes in source
-private val ESC = 27.toChar()
 private const val HIDE_CURSOR_SUFFIX = "[?25l"
 private const val SHOW_CURSOR_SUFFIX = "[?25h"
 private const val ERASE_TO_EOL_SUFFIX = "[K"
@@ -20,6 +21,14 @@ private fun showCursorSeq() = "$ESC$SHOW_CURSOR_SUFFIX"
 private fun eraseToEolSeq() = "$ESC$ERASE_TO_EOL_SUFFIX"
 
 private fun terminalWidth(): Int = System.getenv("COLUMNS")?.toIntOrNull()?.takeIf { it > 0 } ?: 80
+
+private fun interpolateGradient(from: RGBAnsiCode, to: RGBAnsiCode, frameIdx: Int, frameCount: Int): RGBColor {
+    val t = if (frameCount <= 1) 0.0 else frameIdx.toDouble() / (frameCount - 1)
+    val r = (from.red() + t * (to.red() - from.red())).toInt()
+    val g = (from.green() + t * (to.green() - from.green())).toInt()
+    val b = (from.blue() + t * (to.blue() - from.blue())).toInt()
+    return RGBColor(r, g, b)
+}
 
 class Spinner(
     var label: String = "",
@@ -61,12 +70,23 @@ class Spinner(
         thread = Thread {
             var idx = 0
             while (running) {
-                val frame = config.frames[idx % config.frames.size]
+                val frameIdx = idx % config.frames.size
+                val frame = config.frames[frameIdx]
+                val from = config.gradientFrom
+                val to = config.gradientTo
+                val styledFrame = when {
+                    from != null && to != null -> {
+                        val color = interpolateGradient(from, to, frameIdx, config.frames.size)
+                        StyleBuilder().appendAndReset(frame, color).toString()
+                    }
+                    config.color.isNotEmpty() -> StyleBuilder().appendAndReset(frame, *config.color).toString()
+                    else -> frame
+                }
                 val cols = terminalWidth()
                 val rawLabel = this.label
                 // +2 = frame glyph + space; truncate so the full line stays within one terminal row
                 val displayLabel = if (rawLabel.length > cols - 2) rawLabel.take(cols - 3) + "…" else rawLabel
-                System.out.print("\r$frame $displayLabel${eraseToEolSeq()}")
+                System.out.print("\r$styledFrame $displayLabel${eraseToEolSeq()}")
                 System.out.flush()
                 idx++
                 try {
@@ -149,9 +169,19 @@ class Spinner(
 
     override fun get(): String {
         val frame = config.frames[currentFrame]
-        val builder = StyleBuilder().appendAndReset(frame, *config.color)
+        val from = config.gradientFrom
+        val to = config.gradientTo
+        val styledFrame = when {
+            from != null && to != null -> {
+                val color = interpolateGradient(from, to, currentFrame, config.frames.size)
+                StyleBuilder().appendAndReset(frame, color).toString()
+            }
+            config.color.isNotEmpty() -> StyleBuilder().appendAndReset(frame, *config.color).toString()
+            else -> frame
+        }
+        val builder = StringBuilder(styledFrame)
         if (label.isNotEmpty()) {
-            builder.appendAndReset(" " + StringUtils.parse(label, config.parser))
+            builder.append(StyleBuilder().appendAndReset(" " + StringUtils.parse(label, config.parser)))
         }
         return builder.toString()
     }
