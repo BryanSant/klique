@@ -2,8 +2,7 @@ package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.SpinnerConfig
 import io.github.bryansant.klique.spi.ESC
-import io.github.bryansant.klique.emitOsc94
-import io.github.bryansant.klique.ProgressState
+import io.github.bryansant.klique.components.OSC.ProgressState
 import io.github.bryansant.klique.internal.RGBColor
 import io.github.bryansant.klique.internal.utils.AnsiDetector
 import io.github.bryansant.klique.internal.utils.StringUtils
@@ -11,7 +10,6 @@ import io.github.bryansant.klique.spi.RGBAnsiCode
 import io.github.bryansant.klique.style.StyleBuilder
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 
 private const val HIDE_CURSOR_SUFFIX = "[?25l"
 private const val SHOW_CURSOR_SUFFIX = "[?25h"
@@ -45,30 +43,13 @@ class Spinner(
     @Volatile private var paused: Boolean = false
     private var thread: Thread? = null
 
-    companion object {
-        private val shutdownHookRegistered = AtomicBoolean(false)
-
-        fun ensureShutdownHook() {
-            if (shutdownHookRegistered.compareAndSet(false, true)) {
-                Runtime.getRuntime().addShutdownHook(Thread {
-                    if (AnsiDetector.ansiEnabled()) {
-                        emitOsc94(System.out, ProgressState.INACTIVE)
-                        System.out.print(showCursorSeq())
-                        System.out.flush()
-                    }
-                })
-            }
-        }
-    }
-
     // ── Background-thread mode (for withSpinner { }) ──
 
     fun start(): Spinner {
         if (running) return this
         running = true
-        ensureShutdownHook()
         hideCursor(System.out)
-        emitOsc94(System.out, ProgressState.INDETERMINATE)
+        OSC.emitOsc94(System.out, ProgressState.INDETERMINATE)
         thread = Thread {
             var idx = 0
             while (running) {
@@ -114,7 +95,7 @@ class Spinner(
         running = false
         thread?.join(500)
         thread = null
-        emitOsc94(System.out, ProgressState.INACTIVE)
+        OSC.emitOsc94(System.out, ProgressState.INACTIVE)
     }
 
     fun stopWithError(): Spinner {
@@ -122,19 +103,19 @@ class Spinner(
         running = false
         thread?.join(500)
         thread = null
-        emitOsc94(System.out, ProgressState.ERROR)
+        OSC.emitOsc94(System.out, ProgressState.ERROR)
         return this
     }
 
     fun pause(): Spinner {
         paused = true
-        emitOsc94(System.out, ProgressState.PAUSED)
+        OSC.emitOsc94(System.out, ProgressState.PAUSED)
         return this
     }
 
     fun resume(): Spinner {
         paused = false
-        emitOsc94(System.out, ProgressState.INDETERMINATE)
+        OSC.emitOsc94(System.out, ProgressState.INDETERMINATE)
         return this
     }
 
@@ -155,7 +136,7 @@ class Spinner(
     fun stop(stream: PrintStream): Spinner {
         if (stopped) return this
         stopped = true
-        emitOsc94(stream, ProgressState.INACTIVE)
+        OSC.emitOsc94(stream, ProgressState.INACTIVE)
         showCursor(stream)
         stream.println()
         stream.flush()
@@ -165,7 +146,7 @@ class Spinner(
     fun stopWithError(stream: PrintStream): Spinner {
         if (stopped) return this
         stopped = true
-        emitOsc94(stream, ProgressState.ERROR)
+        OSC.emitOsc94(stream, ProgressState.ERROR)
         showCursor(stream)
         stream.println()
         stream.flush()
@@ -178,10 +159,8 @@ class Spinner(
 
     fun spin(durationMs: Long): Spinner {
         require(durationMs >= 0) { "Duration cannot be negative" }
-        val hook = Thread { emitOsc94(System.out, ProgressState.INACTIVE); showCursor(System.out) }
-        Runtime.getRuntime().addShutdownHook(hook)
         hideCursor(System.out)
-        emitOsc94(System.out, ProgressState.INDETERMINATE)
+        OSC.emitOsc94(System.out, ProgressState.INDETERMINATE)
         try {
             val end = System.currentTimeMillis() + durationMs
             this.render()
@@ -196,7 +175,6 @@ class Spinner(
                 }
             }
         } finally {
-            try { Runtime.getRuntime().removeShutdownHook(hook) } catch (_: IllegalStateException) {}
             stop(System.out)
         }
         return this
@@ -240,7 +218,6 @@ fun <T> withSpinner(
     config: SpinnerConfig = SpinnerConfig.DEFAULT,
     block: Spinner.() -> T,
 ): T {
-    Spinner.ensureShutdownHook()
     val spinner = Spinner(label, config).start()
     return try {
         spinner.block()

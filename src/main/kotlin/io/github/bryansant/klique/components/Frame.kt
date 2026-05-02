@@ -1,6 +1,5 @@
 package io.github.bryansant.klique.components
 
-import io.github.bryansant.klique.FrameAlign
 import io.github.bryansant.klique.config.FrameConfig
 import io.github.bryansant.klique.internal.BorderChars
 import io.github.bryansant.klique.internal.Cell
@@ -10,6 +9,9 @@ import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.style.StyleCode
 
 class Frame(val config: FrameConfig = FrameConfig.DEFAULT) : Component {
+
+    enum class FrameAlign { LEFT, CENTER, RIGHT }
+
 
     private val nodes = mutableListOf<FrameNode>()
     private var titleText: String = ""

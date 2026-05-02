@@ -1,5 +1,6 @@
 package io.github.bryansant.klique
 
+import io.github.bryansant.klique.components.OSC
 import io.github.bryansant.klique.components.ProgressBar
 import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.spi.ST
@@ -232,7 +233,7 @@ class KliqueTest {
 
     @Test
     fun `setSystemTitle does not throw`() {
-        setSystemTitle("Klique Test")
+        OSC.setSystemTitle("Klique Test")
     }
 
     // ── SmoothProgressBar ─────────────────────────────────────────────────────

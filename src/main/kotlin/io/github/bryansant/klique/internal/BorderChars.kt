@@ -1,6 +1,6 @@
 package io.github.bryansant.klique.internal
 
-import io.github.bryansant.klique.BoxType
+import io.github.bryansant.klique.components.Box.BoxType
 
 internal class BorderChars(
     var hLine: String,

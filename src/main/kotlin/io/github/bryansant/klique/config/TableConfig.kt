@@ -1,7 +1,7 @@
 package io.github.bryansant.klique.config
 
-import io.github.bryansant.klique.CellAlign
-import io.github.bryansant.klique.TableType
+import io.github.bryansant.klique.components.Table.CellAlign
+import io.github.bryansant.klique.components.Table.TableType
 import io.github.bryansant.klique.parser.MarkupParser
 import io.github.bryansant.klique.spi.AnsiCode
 

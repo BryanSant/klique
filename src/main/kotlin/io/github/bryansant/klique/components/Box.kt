@@ -1,6 +1,5 @@
 package io.github.bryansant.klique.components
 
-import io.github.bryansant.klique.TextAlign
 import io.github.bryansant.klique.config.BoxConfig
 import io.github.bryansant.klique.internal.BorderChars
 import io.github.bryansant.klique.internal.BoxWrapper
@@ -9,6 +8,14 @@ import io.github.bryansant.klique.internal.utils.BoxUtils
 import io.github.bryansant.klique.internal.utils.StringUtils
 
 class Box(val config: BoxConfig = BoxConfig.DEFAULT) : Component {
+
+    enum class BoxType { ASCII, CLASSIC, ROUNDED, DOUBLE_LINE }
+    enum class TextAlign {
+        TOP_LEFT, TOP_CENTER, TOP_RIGHT,
+        CENTER_LEFT, CENTER, CENTER_RIGHT,
+        BOTTOM_LEFT, BOTTOM_CENTER, BOTTOM_RIGHT
+    }
+
 
     private var contentText: String? = null
     private var alignOverride: TextAlign? = null

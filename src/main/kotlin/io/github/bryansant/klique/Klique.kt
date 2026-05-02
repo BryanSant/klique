@@ -8,7 +8,10 @@ import io.github.bryansant.klique.components.Frame
 import io.github.bryansant.klique.components.IterableProgressBar
 import io.github.bryansant.klique.components.ItemList
 import io.github.bryansant.klique.components.ProgressBar
+import io.github.bryansant.klique.components.OSC
+import io.github.bryansant.klique.components.OSC.ProgressState
 import io.github.bryansant.klique.components.Table
+import io.github.bryansant.klique.components.Table.TableType
 import io.github.bryansant.klique.components.Tree
 import io.github.bryansant.klique.components.createTable
 import io.github.bryansant.klique.config.BoxConfig
@@ -20,15 +23,18 @@ import io.github.bryansant.klique.config.TableConfig
 import io.github.bryansant.klique.config.TreeConfig
 import io.github.bryansant.klique.internal.RGBColor
 import io.github.bryansant.klique.internal.utils.AnsiDetector
+import java.util.concurrent.atomic.AtomicBoolean
 import io.github.bryansant.klique.parser.GlobalStyleRegistry
 import io.github.bryansant.klique.parser.MarkupParser
 import io.github.bryansant.klique.parser.ParserConfig
 import io.github.bryansant.klique.parser.StyleContext
 import io.github.bryansant.klique.spi.AnsiCode
+import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.spi.Theme
 import io.github.bryansant.klique.spi.RGBAnsiCode
 import io.github.bryansant.klique.style.Ink
 import io.github.bryansant.klique.style.StyleBuilder
+import io.github.bryansant.klique.style.StyleCode
 
 // ── Color helpers ─────────────────────────────────────────────────────────────
 
@@ -115,3 +121,29 @@ fun registerTheme(theme: Theme) {
 fun findAvailableThemes(): List<Theme> = registeredThemes.toList()
 
 fun findTheme(name: String): Theme? = registeredThemes.find { it.themeName() == name }
+
+// ── OSC terminal integration ──────────────────────────────────────────────────
+
+fun setSystemProgress(state: ProgressState, value: Int = 0) = OSC.emitOsc94(System.out, state, value)
+fun setSystemTitle(title: String) = OSC.setSystemTitle(title)
+fun sendSystemNotification(title: String, message: String) = OSC.sendSystemNotification(title, message)
+fun copyToClipboard(text: String) = OSC.copyToClipboard(text)
+
+// ── Shutdown hooks ────────────────────────────────────────────────────────────
+
+object AnsiCleanup {
+    init {
+        Runtime.getRuntime().addShutdownHook(Thread {
+            if (AnsiDetector.ansiEnabled()) {
+                print("\r${ESC}[K")          // clear current line
+                print(StyleCode.RESET)       // reset all styles
+                print("${ESC}[?25h")         // show cursor
+                val keepProgress = System.getProperty("klique.keepProgress");
+                if (keepProgress.isNullOrEmpty() || keepProgress == "false") {
+                    OSC.emitOsc94(System.out, ProgressState.INACTIVE)
+                }
+                System.out.flush()
+            }
+        })
+    }
+}

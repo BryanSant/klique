@@ -11,7 +11,7 @@ fi
 
 # Execute the binary with all passed arguments
 if [ -f "$BINARY" ]; then
-    "./$BINARY" "$@"
+    exec "./$BINARY" "$@"
 else
     echo "Error: Native compilation failed or binary not found at $BINARY"
     exit 1

@@ -48,7 +48,7 @@ tasks.register<Exec>("compressBinary") {
 }
 
 tasks.named("nativeCompile") {
-    finalizedBy("compressBinary")
+//    finalizedBy("compressBinary")
 }
 
 dependencies {

@@ -1,7 +1,7 @@
 package io.github.bryansant.klique.internal
 
-import io.github.bryansant.klique.FrameAlign
 import io.github.bryansant.klique.components.Component
+import io.github.bryansant.klique.components.Frame.FrameAlign
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.parser.MarkupParser
 

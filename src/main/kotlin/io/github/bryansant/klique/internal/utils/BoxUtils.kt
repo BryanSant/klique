@@ -1,6 +1,6 @@
 package io.github.bryansant.klique.internal.utils
 
-import io.github.bryansant.klique.TextAlign
+import io.github.bryansant.klique.components.Box.TextAlign
 import io.github.bryansant.klique.internal.BorderChars
 import io.github.bryansant.klique.internal.BoxWrapper
 import io.github.bryansant.klique.internal.Cell

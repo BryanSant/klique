@@ -1,6 +1,6 @@
 package io.github.bryansant.klique.internal.utils
 
-import io.github.bryansant.klique.CellAlign
+import io.github.bryansant.klique.components.Table.CellAlign
 import io.github.bryansant.klique.internal.WidthAwareList
 
 internal object TableUtils {

@@ -1,6 +1,6 @@
 package io.github.bryansant.klique.components
 
-import io.github.bryansant.klique.TableType
+import io.github.bryansant.klique.components.Table.TableType
 import io.github.bryansant.klique.config.TableConfig
 import io.github.bryansant.klique.internal.Cell
 import io.github.bryansant.klique.internal.WidthAwareList
@@ -8,6 +8,10 @@ import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.internal.utils.TableUtils
 
 sealed interface Table : Component {
+
+    enum class CellAlign { LEFT, CENTER, RIGHT }
+    enum class TableType { ASCII, COMPACT, BOX_DRAW, ROUNDED_BOX_DRAW, MARKDOWN }
+
     fun row(vararg cells: String?): Table
     fun row(cells: Collection<String?>): Table = row(*cells.toTypedArray())
     fun removeRow(index: Int): Table

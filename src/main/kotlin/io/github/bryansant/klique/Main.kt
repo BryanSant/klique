@@ -1,11 +1,15 @@
 package io.github.bryansant.klique
 
+import io.github.bryansant.klique.components.OSC
+import io.github.bryansant.klique.components.OSC.ProgressState
+
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
         printUsage()
         return
     }
 
+    System.setProperty("klique.keepProgress", "true");
     val defaultInk = InkFile.load()
 
     when (args[0].lowercase()) {
@@ -13,12 +17,12 @@ fun main(args: Array<String>) {
             val message = args.drop(1).joinToString(" ")
             val parsed = message.parseMarkup()
             val output = if (defaultInk != null) InkFile.applyToText(parsed, defaultInk) else parsed
-            print(output.trim())
+            println(output.trim())
         }
         "spin" -> {
             when (args.getOrNull(1)?.lowercase()) {
-                null -> emitOsc94(System.out, ProgressState.INDETERMINATE)
-                "done" -> emitOsc94(System.out, ProgressState.INACTIVE)
+                null -> OSC.emitOsc94(System.out, ProgressState.INDETERMINATE)
+                "done" -> OSC.emitOsc94(System.out, ProgressState.INACTIVE)
                 else -> {
                     System.err.println("spin takes no argument or 'done'")
                     printUsage()
@@ -35,15 +39,43 @@ fun main(args: Array<String>) {
             }
 
             if (arg == "done") {
-                emitOsc94(System.out, ProgressState.INACTIVE)
+                OSC.emitOsc94(System.out, ProgressState.INACTIVE)
             } else {
                 val value = arg.toIntOrNull()
                 if (value == null) {
                     System.err.println("Invalid prog argument: '$arg'")
                     return
                 }
-                emitOsc94(System.out, ProgressState.IN_PROGRESS, value.coerceIn(0, 100))
+                OSC.emitOsc94(System.out, ProgressState.IN_PROGRESS, value.coerceIn(0, 100))
             }
+        }
+        "title" -> {
+            val text = args.drop(1).joinToString(" ")
+            if (text.isEmpty()) {
+                System.err.println("title requires text")
+                printUsage()
+                return
+            }
+            OSC.setSystemTitle(text)
+        }
+        "notify" -> {
+            if (args.size < 3) {
+                System.err.println("notify requires <subject> <message>")
+                printUsage()
+                return
+            }
+            val subject = args[1]
+            val message = args.drop(2).joinToString(" ")
+            OSC.sendSystemNotification(subject, message)
+        }
+        "copy" -> {
+            val text = args.drop(1).joinToString(" ")
+            if (text.isEmpty()) {
+                System.err.println("copy requires text")
+                printUsage()
+                return
+            }
+            OSC.copyToClipboard(text)
         }
         "ink" -> {
             val colors = args.drop(1)
@@ -75,4 +107,7 @@ private fun printUsage() {
     println("  say <message>           Print a Klique markup message")
     println("  spin [done]             Bump the terminal OSC intermediate indicator")
     println("  prog <0-100|done>       Set the terminal OSC progress bar percentage")
+    println("  title <text>            Set the terminal window title")
+    println("  notify <subject> <msg>  Send a desktop notification")
+    println("  copy <text>             Copy text to the clipboard")
 }

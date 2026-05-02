@@ -1,7 +1,7 @@
 package io.github.bryansant.klique.config
 
-import io.github.bryansant.klique.BoxType
-import io.github.bryansant.klique.FrameAlign
+import io.github.bryansant.klique.components.Box.BoxType
+import io.github.bryansant.klique.components.Frame.FrameAlign
 import io.github.bryansant.klique.parser.MarkupParser
 import io.github.bryansant.klique.spi.AnsiCode
 
