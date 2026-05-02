@@ -1,6 +1,8 @@
 package io.github.bryansant.klique.parser
 
+import io.github.bryansant.klique.internal.RGBColor
 import io.github.bryansant.klique.spi.AnsiCode
+import io.github.bryansant.klique.spi.RGBAnsiCode
 import io.github.bryansant.klique.style.BackgroundCode
 import io.github.bryansant.klique.style.ColorCode
 import io.github.bryansant.klique.style.StyleCode
@@ -66,14 +68,37 @@ internal object PredefinedStyleContext {
 
     val CUSTOM_STYLE_CODES: ConcurrentHashMap<String, AnsiCode> = ConcurrentHashMap()
 
-    // Resolution order: local context → global custom → predefined
+    // Resolution order: local context → global custom → predefined → hex color
     fun get(name: String, ctx: StyleContext): AnsiCode? =
         ctx.get(name)
             ?: CUSTOM_STYLE_CODES[name]
             ?: COLOR_CODES.get(name)
             ?: BACKGROUND_CODES.get(name)
             ?: STYLE_CODES.get(name)
+            ?: parseHexColor(name)
 
     fun getOrThrow(name: String, ctx: StyleContext): AnsiCode =
         get(name, ctx) ?: throw IllegalArgumentException("Unidentified style: '$name'")
+
+    private fun parseHexColor(name: String): RGBAnsiCode? {
+        val background = name.startsWith("bg_#")
+        val spec = if (background) name.removePrefix("bg_") else name
+        if (!spec.startsWith("#")) return null
+        val hex = spec.removePrefix("#").lowercase()
+        return when (hex.length) {
+            3 -> {
+                val r = "${hex[0]}${hex[0]}".toIntOrNull(16) ?: return null
+                val g = "${hex[1]}${hex[1]}".toIntOrNull(16) ?: return null
+                val b = "${hex[2]}${hex[2]}".toIntOrNull(16) ?: return null
+                RGBColor(r, g, b, background)
+            }
+            6 -> {
+                val r = hex.substring(0, 2).toIntOrNull(16) ?: return null
+                val g = hex.substring(2, 4).toIntOrNull(16) ?: return null
+                val b = hex.substring(4, 6).toIntOrNull(16) ?: return null
+                RGBColor(r, g, b, background)
+            }
+            else -> null
+        }
+    }
 }

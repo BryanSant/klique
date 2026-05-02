@@ -2,6 +2,7 @@ package io.github.bryansant.klique.components
 
 import io.github.bryansant.klique.config.ProgressBarConfig
 import io.github.bryansant.klique.emitOsc94
+import io.github.bryansant.klique.ProgressState
 import io.github.bryansant.klique.internal.Gradient
 import io.github.bryansant.klique.internal.utils.StringUtils
 import io.github.bryansant.klique.style.StyleBuilder
@@ -19,6 +20,8 @@ class ProgressBar(
     private val creationTime: Long = System.currentTimeMillis()
     internal var currentTick: Int = 0
     internal var isDone: Boolean = false
+    internal var isError: Boolean = false
+    internal var isPaused: Boolean = false
 
     fun tick(): ProgressBar = tick(1)
 
@@ -114,9 +117,34 @@ class ProgressBar(
         )
     }
 
+    fun error(stream: PrintStream = System.out): ProgressBar {
+        isError = true
+        emitOsc94(stream, ProgressState.ERROR, computePercent())
+        return this
+    }
+
+    fun pause(stream: PrintStream = System.out): ProgressBar {
+        isPaused = true
+        emitOsc94(stream, ProgressState.PAUSED, computePercent())
+        return this
+    }
+
+    fun resume(stream: PrintStream = System.out): ProgressBar {
+        isPaused = false
+        val state = if (isError) ProgressState.ERROR else ProgressState.IN_PROGRESS
+        emitOsc94(stream, state, computePercent())
+        return this
+    }
+
     override fun render(stream: PrintStream) {
         val percent = computePercent()
-        emitOsc94(stream, if (isDone) 0 else 1, percent)
+        val oscState = when {
+            isDone   -> ProgressState.INACTIVE
+            isError  -> ProgressState.ERROR
+            isPaused -> ProgressState.PAUSED
+            else     -> ProgressState.IN_PROGRESS
+        }
+        emitOsc94(stream, oscState, percent)
         stream.print("\r${get()}")
         if (isDone) stream.println()
         stream.flush()

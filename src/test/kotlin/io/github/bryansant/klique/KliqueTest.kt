@@ -1,8 +1,8 @@
 package io.github.bryansant.klique
 
 import io.github.bryansant.klique.components.ProgressBar
-import io.github.bryansant.klique.spi.BEL
 import io.github.bryansant.klique.spi.ESC
+import io.github.bryansant.klique.spi.ST
 import io.github.bryansant.klique.components.Spinner
 import io.github.bryansant.klique.components.withSpinner
 import io.github.bryansant.klique.config.progressBarConfig
@@ -222,7 +222,7 @@ class KliqueTest {
             val spinner = Spinner("Working")
             spinner.stop(stream)
             val output = buf.toString()
-            assertTrue("${ESC}]9;4;0;0${BEL}" in output)
+            assertTrue("${ESC}]9;4;0;0${ST}" in output)
         } finally {
             disableColors()
         }
@@ -305,7 +305,7 @@ class KliqueTest {
             bar.tick(5, false)   // advance to 50%, no render
             bar.render(stream)
             val output = buf.toString()
-            assertTrue("${ESC}]9;4;1;50${BEL}" in output)
+            assertTrue("${ESC}]9;4;1;50${ST}" in output)
         } finally {
             disableColors()
         }
@@ -321,7 +321,74 @@ class KliqueTest {
             bar.tick(4, false)   // complete, no render
             bar.render(stream)
             val output = buf.toString()
-            assertTrue("${ESC}]9;4;0;100${BEL}" in output)
+            assertTrue("${ESC}]9;4;0;100${ST}" in output)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `ProgressBar render emits state 2 when in error state`() {
+        enableColors()
+        try {
+            val buf = ByteArrayOutputStream()
+            val stream = PrintStream(buf)
+            val bar = ProgressBar(10)
+            bar.tick(3, false)
+            bar.isError = true
+            bar.render(stream)
+            val output = buf.toString()
+            assertTrue("${ESC}]9;4;2;30${ST}" in output)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `ProgressBar render emits state 4 when paused`() {
+        enableColors()
+        try {
+            val buf = ByteArrayOutputStream()
+            val stream = PrintStream(buf)
+            val bar = ProgressBar(10)
+            bar.tick(5, false)
+            bar.isPaused = true
+            bar.render(stream)
+            val output = buf.toString()
+            assertTrue("${ESC}]9;4;4;50${ST}" in output)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `ProgressBar resume emits state 1 after pause`() {
+        enableColors()
+        try {
+            val buf = ByteArrayOutputStream()
+            val stream = PrintStream(buf)
+            val bar = ProgressBar(10)
+            bar.tick(5, false)
+            bar.pause(stream)
+            buf.reset()
+            bar.resume(stream)
+            val output = buf.toString()
+            assertTrue("${ESC}]9;4;1;50${ST}" in output)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `Spinner stopWithError emits OSC 9 semicolon 4 state 2`() {
+        enableColors()
+        try {
+            val buf = ByteArrayOutputStream()
+            val stream = PrintStream(buf)
+            val spinner = Spinner("Working")
+            spinner.stopWithError(stream)
+            val output = buf.toString()
+            assertTrue("${ESC}]9;4;2;0${ST}" in output)
         } finally {
             disableColors()
         }

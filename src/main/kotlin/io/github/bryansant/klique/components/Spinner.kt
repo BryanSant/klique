@@ -3,6 +3,7 @@ package io.github.bryansant.klique.components
 import io.github.bryansant.klique.config.SpinnerConfig
 import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.emitOsc94
+import io.github.bryansant.klique.ProgressState
 import io.github.bryansant.klique.internal.RGBColor
 import io.github.bryansant.klique.internal.utils.AnsiDetector
 import io.github.bryansant.klique.internal.utils.StringUtils
@@ -41,6 +42,7 @@ class Spinner(
 
     // Daemon thread for background spinning (Klique-style)
     @Volatile private var running: Boolean = false
+    @Volatile private var paused: Boolean = false
     private var thread: Thread? = null
 
     companion object {
@@ -50,7 +52,7 @@ class Spinner(
             if (shutdownHookRegistered.compareAndSet(false, true)) {
                 Runtime.getRuntime().addShutdownHook(Thread {
                     if (AnsiDetector.ansiEnabled()) {
-                        emitOsc94(System.out, 0)
+                        emitOsc94(System.out, ProgressState.INACTIVE)
                         System.out.print(showCursorSeq())
                         System.out.flush()
                     }
@@ -66,28 +68,30 @@ class Spinner(
         running = true
         ensureShutdownHook()
         hideCursor(System.out)
-        emitOsc94(System.out, 3)
+        emitOsc94(System.out, ProgressState.INDETERMINATE)
         thread = Thread {
             var idx = 0
             while (running) {
-                val frameIdx = idx % config.frames.size
-                val frame = config.frames[frameIdx]
-                val from = config.gradientFrom
-                val to = config.gradientTo
-                val styledFrame = when {
-                    from != null && to != null -> {
-                        val color = interpolateGradient(from, to, frameIdx, config.frames.size)
-                        StyleBuilder().appendAndReset(frame, color).toString()
+                if (!paused) {
+                    val frameIdx = idx % config.frames.size
+                    val frame = config.frames[frameIdx]
+                    val from = config.gradientFrom
+                    val to = config.gradientTo
+                    val styledFrame = when {
+                        from != null && to != null -> {
+                            val color = interpolateGradient(from, to, frameIdx, config.frames.size)
+                            StyleBuilder().appendAndReset(frame, color).toString()
+                        }
+                        config.color.isNotEmpty() -> StyleBuilder().appendAndReset(frame, *config.color).toString()
+                        else -> frame
                     }
-                    config.color.isNotEmpty() -> StyleBuilder().appendAndReset(frame, *config.color).toString()
-                    else -> frame
+                    val cols = terminalWidth()
+                    val rawLabel = this.label
+                    // +2 = frame glyph + space; truncate so the full line stays within one terminal row
+                    val displayLabel = if (rawLabel.length > cols - 2) rawLabel.take(cols - 3) + "…" else rawLabel
+                    System.out.print("\r$styledFrame $displayLabel${eraseToEolSeq()}")
+                    System.out.flush()
                 }
-                val cols = terminalWidth()
-                val rawLabel = this.label
-                // +2 = frame glyph + space; truncate so the full line stays within one terminal row
-                val displayLabel = if (rawLabel.length > cols - 2) rawLabel.take(cols - 3) + "…" else rawLabel
-                System.out.print("\r$styledFrame $displayLabel${eraseToEolSeq()}")
-                System.out.flush()
                 idx++
                 try {
                     Thread.sleep(config.frameDelayMs)
@@ -110,7 +114,28 @@ class Spinner(
         running = false
         thread?.join(500)
         thread = null
-        emitOsc94(System.out, 0)
+        emitOsc94(System.out, ProgressState.INACTIVE)
+    }
+
+    fun stopWithError(): Spinner {
+        if (!running) return this
+        running = false
+        thread?.join(500)
+        thread = null
+        emitOsc94(System.out, ProgressState.ERROR)
+        return this
+    }
+
+    fun pause(): Spinner {
+        paused = true
+        emitOsc94(System.out, ProgressState.PAUSED)
+        return this
+    }
+
+    fun resume(): Spinner {
+        paused = false
+        emitOsc94(System.out, ProgressState.INDETERMINATE)
+        return this
     }
 
     override fun close() = stop()
@@ -130,7 +155,17 @@ class Spinner(
     fun stop(stream: PrintStream): Spinner {
         if (stopped) return this
         stopped = true
-        emitOsc94(stream, 0)
+        emitOsc94(stream, ProgressState.INACTIVE)
+        showCursor(stream)
+        stream.println()
+        stream.flush()
+        return this
+    }
+
+    fun stopWithError(stream: PrintStream): Spinner {
+        if (stopped) return this
+        stopped = true
+        emitOsc94(stream, ProgressState.ERROR)
         showCursor(stream)
         stream.println()
         stream.flush()
@@ -143,10 +178,10 @@ class Spinner(
 
     fun spin(durationMs: Long): Spinner {
         require(durationMs >= 0) { "Duration cannot be negative" }
-        val hook = Thread { emitOsc94(System.out, 0); showCursor(System.out) }
+        val hook = Thread { emitOsc94(System.out, ProgressState.INACTIVE); showCursor(System.out) }
         Runtime.getRuntime().addShutdownHook(hook)
         hideCursor(System.out)
-        emitOsc94(System.out, 3)
+        emitOsc94(System.out, ProgressState.INDETERMINATE)
         try {
             val end = System.currentTimeMillis() + durationMs
             this.render()

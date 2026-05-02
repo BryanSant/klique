@@ -2,7 +2,6 @@ package io.github.bryansant.klique
 
 import io.github.bryansant.klique.parser.PredefinedStyleContext
 import io.github.bryansant.klique.parser.StyleContext
-import io.github.bryansant.klique.spi.AnsiCode
 import io.github.bryansant.klique.spi.RGBAnsiCode
 import io.github.bryansant.klique.style.Ink
 import java.io.File
@@ -30,15 +29,13 @@ internal object InkFile {
         return file.readText().lines().filter { it.isNotBlank() }.takeIf { it.isNotEmpty() }
     }
 
-    fun resolveSpec(spec: String): AnsiCode? =
-        if (spec.startsWith("#")) RGBAnsiCode.parseHex(spec)
-        else PredefinedStyleContext.get(spec, StyleContext.NONE)
+    fun resolveSpec(spec: String) = PredefinedStyleContext.get(spec, StyleContext.NONE)
 
     fun applyToText(text: String, colors: List<String>): String {
         if (colors.isEmpty()) return text
         if (colors.size >= 2) {
-            val from = RGBAnsiCode.parseHex(colors[0])
-            val to = RGBAnsiCode.parseHex(colors[1])
+            val from = resolveSpec(colors[0]) as? RGBAnsiCode
+            val to = resolveSpec(colors[1]) as? RGBAnsiCode
             if (from != null && to != null) return Ink().gradient(from, to).on(text)
         }
         val code = resolveSpec(colors[0]) ?: return text

@@ -17,8 +17,8 @@ fun main(args: Array<String>) {
         }
         "spin" -> {
             when (args.getOrNull(1)?.lowercase()) {
-                null -> emitOsc94(System.out, 3)
-                "done" -> emitOsc94(System.out, 0)
+                null -> emitOsc94(System.out, ProgressState.INDETERMINATE)
+                "done" -> emitOsc94(System.out, ProgressState.INACTIVE)
                 else -> {
                     System.err.println("spin takes no argument or 'done'")
                     printUsage()
@@ -35,14 +35,14 @@ fun main(args: Array<String>) {
             }
 
             if (arg == "done") {
-                emitOsc94(System.out, 0)
+                emitOsc94(System.out, ProgressState.INACTIVE)
             } else {
                 val value = arg.toIntOrNull()
                 if (value == null) {
                     System.err.println("Invalid prog argument: '$arg'")
                     return
                 }
-                emitOsc94(System.out, 1, value.coerceIn(0, 100))
+                emitOsc94(System.out, ProgressState.IN_PROGRESS, value.coerceIn(0, 100))
             }
         }
         "ink" -> {
