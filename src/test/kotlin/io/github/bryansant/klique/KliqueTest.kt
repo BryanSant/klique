@@ -236,6 +236,43 @@ class KliqueTest {
         OSC.setSystemTitle("Klique Test")
     }
 
+    // ── Links ────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `link returns plain text when colors disabled`() {
+        val result = "click here".link("https://example.com")
+        assertTrue(result.isNotBlank())
+        assertTrue("click here" in result)
+    }
+
+    @Test
+    fun `link wraps text in OSC 8 sequences when colors enabled`() {
+        enableColors()
+        try {
+            val url = "https://example.com"
+            val result = "click here".link(url)
+            assertTrue("${ESC}]8;;${url}${ESC}\\" in result)
+            assertTrue("click here" in result)
+            assertTrue("${ESC}]8;;${ESC}\\" in result)
+        } finally {
+            disableColors()
+        }
+    }
+
+    @Test
+    fun `parseMarkup link tag emits OSC 8 sequences when colors enabled`() {
+        enableColors()
+        try {
+            val url = "https://example.com"
+            val result = "[link=${url}]click here[/link]".parseMarkup()
+            assertTrue("${ESC}]8;;${url}${ESC}\\" in result)
+            assertTrue("click here" in result)
+            assertTrue("${ESC}]8;;${ESC}\\" in result)
+        } finally {
+            disableColors()
+        }
+    }
+
     // ── SmoothProgressBar ─────────────────────────────────────────────────────
 
     @Test

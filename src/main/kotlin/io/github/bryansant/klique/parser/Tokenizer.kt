@@ -1,5 +1,6 @@
 package io.github.bryansant.klique.parser
 
+import io.github.bryansant.klique.internal.LinkOpenCode
 import io.github.bryansant.klique.spi.ESC
 import io.github.bryansant.klique.spi.AnsiCode
 
@@ -67,7 +68,13 @@ internal object Tokenizer {
         val parts = inner.split(delimiterPattern)
         val validStyles = mutableListOf<AnsiCode>()
         for (part in parts) {
-            val s = part.trim().lowercase()
+            val raw = part.trim()
+            val s = raw.lowercase()
+            if (s.startsWith("link=")) {
+                val url = raw.removePrefix("link=")
+                if (url.isNotEmpty()) validStyles.add(LinkOpenCode(url))
+                continue
+            }
             val code = PredefinedStyleContext.get(s, context)
             if (code != null) {
                 validStyles.add(code)

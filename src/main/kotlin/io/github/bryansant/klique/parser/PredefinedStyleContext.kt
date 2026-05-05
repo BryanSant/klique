@@ -1,5 +1,6 @@
 package io.github.bryansant.klique.parser
 
+import io.github.bryansant.klique.internal.LinkCloseCode
 import io.github.bryansant.klique.internal.RGBColor
 import io.github.bryansant.klique.spi.AnsiCode
 import io.github.bryansant.klique.spi.RGBAnsiCode
@@ -61,6 +62,7 @@ internal object PredefinedStyleContext {
             "rv" to StyleCode.REVERSE_VIDEO,
             "inv" to StyleCode.INVISIBLE_TEXT,
             "/" to StyleCode.RESET,
+            "/link" to LinkCloseCode,
             "dbl_ul" to StyleCode.DOUBLE_UNDERLINE,
             "strike" to StyleCode.STRIKETHROUGH,
         )

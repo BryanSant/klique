@@ -50,7 +50,7 @@ fun String.strikethrough(): String = styled { strikethrough() }
 fun String.reverseVideo(): String = styled { reverseVideo() }
 
 /** Wraps this string in an OSC 8 terminal hyperlink. */
-fun String.hyperlink(url: String): String = styled { hyperlink(url) }
+fun String.link(url: String): String = styled { link(url) }
 
 /** Applies a per-character RGB gradient from [from] to [to] across this string. */
 fun String.gradient(from: RGBAnsiCode, to: RGBAnsiCode): String = styled { gradient(from, to) }

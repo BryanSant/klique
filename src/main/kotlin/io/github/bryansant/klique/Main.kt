@@ -2,6 +2,7 @@ package io.github.bryansant.klique
 
 import io.github.bryansant.klique.components.OSC
 import io.github.bryansant.klique.components.OSC.ProgressState
+import io.github.bryansant.klique.internal.Link
 
 fun main(args: Array<String>) {
     if (args.isEmpty()) {
@@ -77,6 +78,16 @@ fun main(args: Array<String>) {
             }
             OSC.copyToClipboard(text)
         }
+        "link" -> {
+            if (args.size < 3) {
+                System.err.println("link requires <url> <text>")
+                printUsage()
+                return
+            }
+            val url = args[1]
+            val text = args.drop(2).joinToString(" ")
+            println(Link(url).apply(text))
+        }
         "ink" -> {
             val colors = args.drop(1)
             if (colors.isEmpty() || colors.size > 2) {
@@ -110,4 +121,5 @@ private fun printUsage() {
     println("  title <text>            Set the terminal window title")
     println("  notify <subject> <msg>  Send a desktop notification")
     println("  copy <text>             Copy text to the clipboard")
+    println("  link <url> <text>       Output an OSC 8 hyperlink")
 }

@@ -1,7 +1,7 @@
 package io.github.bryansant.klique.style
 
 import io.github.bryansant.klique.internal.Gradient
-import io.github.bryansant.klique.internal.Hyperlink
+import io.github.bryansant.klique.internal.Link
 import io.github.bryansant.klique.internal.RGBColor
 import io.github.bryansant.klique.parser.PredefinedStyleContext
 import io.github.bryansant.klique.parser.StyleContext
@@ -11,22 +11,22 @@ import io.github.bryansant.klique.spi.RGBAnsiCode
 class Ink private constructor(
     private val codes: List<AnsiCode>,
     private val context: StyleContext,
-    private val hyperlink: Hyperlink?,
+    private val link: Link?,
     private val gradient: Gradient?,
 ) {
     constructor(context: StyleContext = StyleContext.NONE) : this(emptyList(), context, null, null)
 
-    private fun with(code: AnsiCode): Ink = Ink(codes + code, context, hyperlink, gradient)
-    private fun with(link: Hyperlink): Ink = Ink(ArrayList(codes), context, link, gradient)
-    private fun with(grad: Gradient): Ink = Ink(ArrayList(codes), context, hyperlink, grad)
+    private fun with(code: AnsiCode): Ink = Ink(codes + code, context, link, gradient)
+    private fun with(lnk: Link): Ink = Ink(ArrayList(codes), context, lnk, gradient)
+    private fun with(grad: Gradient): Ink = Ink(ArrayList(codes), context, link, grad)
 
     fun on(value: String): String {
-        if (codes.isEmpty() && gradient == null && hyperlink == null) return value
+        if (codes.isEmpty() && gradient == null && link == null) return value
         val sb = StringBuilder()
         for (code in codes) sb.append(code.ansiSequence())
         var styled = sb.append(value).append(StyleCode.RESET).toString()
         if (gradient != null) styled = gradient.apply(styled)
-        if (hyperlink != null) styled = hyperlink.apply(styled)
+        if (link != null) styled = link.apply(styled)
         return styled
     }
 
@@ -34,7 +34,7 @@ class Ink private constructor(
 
     fun of(style: String): Ink = with(PredefinedStyleContext.getOrThrow(style, context))
     fun of(code: AnsiCode): Ink = with(code)
-    fun hyperlink(url: String): Ink = with(Hyperlink(url))
+    fun link(url: String): Ink = with(Link(url))
     fun gradient(from: RGBAnsiCode, to: RGBAnsiCode): Ink = with(Gradient(from, to))
 
     fun black(): Ink = with(ColorCode.BLACK)
