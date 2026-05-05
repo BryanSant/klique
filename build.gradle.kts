@@ -11,7 +11,7 @@ group = "io.github.bryansant"
 version = System.getenv("GITHUB_REF_NAME")?.let { ref ->
     if (ref.startsWith("v")) ref.removePrefix("v")
     else ref
-} ?: "1.0.7-SNAPSHOT"
+} ?: "1.0.8-SNAPSHOT"
 
 kotlin {
     jvmToolchain(25)
