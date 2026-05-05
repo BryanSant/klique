@@ -27,7 +27,7 @@ Klique provides idiomatic Kotlin ergonomics for building beautiful CLIs: trailin
 
 ```kotlin
 dependencies {
-    implementation("io.github.bryansant:klique:1.0.5")
+    implementation("io.github.bryansant:klique:1.0.8")
 }
 ```
 
